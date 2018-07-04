@@ -181,9 +181,11 @@ public class State {
     } catch (Exception e) {
       throw new InternalError(e.toString());
     }
-    if (deleteResponse.getStatus() == TpStateDeleteResponse.Status.AUTHORIZATION_ERROR) {
-      throw new InvalidTransactionException(
+    if (deleteResponse != null) {
+      if (deleteResponse.getStatus() == TpStateDeleteResponse.Status.AUTHORIZATION_ERROR) {
+        throw new InvalidTransactionException(
           "Tried to delete unauthorized state address " + addresses.toString());
+      }
     }
     return deleteResponse.getAddressesList();
   } 
