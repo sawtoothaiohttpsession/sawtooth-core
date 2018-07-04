@@ -22,7 +22,16 @@ import sawtooth.sdk.messaging.Stream;
 import sawtooth.sdk.processor.exceptions.InternalError;
 import sawtooth.sdk.processor.exceptions.InvalidTransactionException;
 import sawtooth.sdk.processor.exceptions.ValidatorConnectionError;
+import sawtooth.sdk.protobuf.Event.Attribute;
+import sawtooth.sdk.protobuf.Event;
 import sawtooth.sdk.protobuf.Message;
+import sawtooth.sdk.protobuf.Message.MessageType;
+import sawtooth.sdk.protobuf.TpEventAddRequest;
+import sawtooth.sdk.protobuf.TpEventAddResponse;
+import sawtooth.sdk.protobuf.TpReceiptAddDataRequest;
+import sawtooth.sdk.protobuf.TpReceiptAddDataResponse;
+import sawtooth.sdk.protobuf.TpStateDeleteRequest;
+import sawtooth.sdk.protobuf.TpStateDeleteResponse;
 import sawtooth.sdk.protobuf.TpStateEntry;
 import sawtooth.sdk.protobuf.TpStateGetRequest;
 import sawtooth.sdk.protobuf.TpStateGetResponse;
@@ -144,5 +153,122 @@ public class State {
 
     return addressesThatWereSet;
   }
+ 
+  /**Make a delete request on a specific context specified by contextId.
+   * This method will delete the batch of valid addresses pass by client or
+   * reject the entire collection of address if any one address is not valid
+   * @param addresses A collection of Map.Entry's
+   * @return addressesThatWereDeleted, A collection of address Strings that were delete
+   * @throws InternalError something went wrong processing transaction
+   */
 
+  public Collection<String> deleteState(Collection<String> addresses)
+                        throws InternalError, InvalidTransactionException {
+    TpStateDeleteRequest deleteRequest = TpStateDeleteRequest.newBuilder()
+                                         .addAllAddresses(addresses)
+                                         .setContextId(this.contextId)
+                                         .build();
+    Future future = stream.send(Message.MessageType.TP_STATE_DELETE_REQUEST,
+                             deleteRequest.toByteString());
+    TpStateDeleteResponse deleteResponse = null;
+    try {
+      deleteResponse = TpStateDeleteResponse
+                         .parseFrom(future.getResult(TIME_OUT));
+    } catch (InvalidProtocolBufferException ipbe) {
+      throw new InvalidTransactionException(ipbe.toString());
+    } catch (ValidatorConnectionError vce) {
+      throw new InternalError(vce.toString());
+    } catch (Exception e) {
+      throw new InternalError(e.toString());
+    }
+    if (deleteResponse.getStatus() == TpStateDeleteResponse.Status.AUTHORIZATION_ERROR) {
+      throw new InvalidTransactionException(
+          "Tried to delete unauthorized state address " + addresses.toString());
+    }
+    return deleteResponse.getAddressesList();
+  } 
+  
+  /**Make an add event request on something happend on State Object for a specific context.
+   *
+   * @param eventType {String} - This is used to subscribe to events. It should
+   *     be globally unique and describe what, in general, has occurred
+   * @param attributes {Collection{key,value}} - Additional information about the event that
+   *     is transparent to the validator.  Attributes can be used by subscribers to
+   *     filter the type of events they receive
+   * @param data {ByteString} - Additional information about the event that is
+   *     opaque to the validator
+   * @throws InternalError something went wrong while processing transaction
+   */
+
+  public void addEvent(String eventType,
+                       Collection<java.util.Map.Entry<String, String>>
+                       attributes,ByteString data)
+                       throws InternalError, InvalidTransactionException {
+    if (attributes == null) {
+      attributes = new ArrayList<>();
+    }
+    sawtooth.sdk.protobuf.Event.Attribute.Builder attributeBuilder = null;
+    for (Map.Entry<String, String> entry : attributes) {
+      if (!entry.getKey().isEmpty()) {
+        attributeBuilder = sawtooth.sdk.protobuf.Event.Attribute.newBuilder()
+                           .setKey(entry.getKey())
+                           .setValue(entry.getValue());
+      }
+    }
+    Event event = sawtooth.sdk.protobuf.Event.newBuilder()
+                  .setEventType(eventType)
+                  .setData(data)
+                  .addAttributes(attributeBuilder.build()).build();  
+    TpEventAddRequest eventAddRequest = TpEventAddRequest
+                                        .newBuilder()
+                                        .setContextId(this.contextId)
+                                        .setEvent(event).build();
+    Future future = stream.send(MessageType.TP_EVENT_ADD_REQUEST,
+                              eventAddRequest.toByteString());
+    TpEventAddResponse eventAddReponse = null;
+    try {
+      eventAddReponse = TpEventAddResponse
+                        .parseFrom(future.getResult(TIME_OUT));
+    } catch (InvalidProtocolBufferException ipbe) {
+      throw new InvalidTransactionException(ipbe.toString());
+    } catch (ValidatorConnectionError vce) {
+      throw new InternalError(vce.toString());
+    } catch (Exception e) {
+      throw new InternalError(e.toString());
+    }
+    if (eventAddReponse.getStatus() != TpEventAddResponse.Status.OK) {
+      throw new InternalError("Failed to add event : " + eventType.toString());
+    }
+  }
+  /**Add a blob to the execution result for this transaction.
+   *
+   * @param data - the data to add
+   * @throws InternalError something went wrong processing transaction
+   */
+  public void addTransactionReceipt(byte[] data)
+                    throws InternalError, InvalidTransactionException {
+    TpReceiptAddDataRequest setAddDataRequest = TpReceiptAddDataRequest
+                                                .newBuilder()
+                                                .setContextId(this.contextId)
+                                                .setData(ByteString.copyFrom(data))
+                                                .build();
+    Future future = stream.send(Message.MessageType.TP_RECEIPT_ADD_DATA_REQUEST,
+                    setAddDataRequest.toByteString());
+    TpReceiptAddDataResponse setAddDataResponse = null;
+    try {
+      setAddDataResponse = TpReceiptAddDataResponse
+                           .parseFrom(future.getResult(TIME_OUT));
+
+    } catch (InvalidProtocolBufferException ipbe) {
+      throw new InvalidTransactionException(ipbe.toString());
+    } catch (ValidatorConnectionError vce) {
+      throw new InternalError(vce.toString());
+    } catch (Exception e) {
+      throw new InternalError(e.toString());
+    }
+    if (setAddDataResponse.getStatus() == TpReceiptAddDataResponse.Status.ERROR) {
+      throw new InternalError("Failed to add receipt data " + data.toString());
+    }
+  }
+   
 }
