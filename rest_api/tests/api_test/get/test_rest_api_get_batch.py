@@ -47,6 +47,57 @@ class TestBatchList(RestApiBaseTest):
 
         self.assert_check_family(response)
         self.assert_check_batch_nonce(response)
+
+
+    def test_api_get_each_state_head_length(self, setup):
+        """Tests the each state head length should be 128 hex character long 
+        """   
+        try:   
+            for _ in get_state_list()['data']:
+                expected_head = setup['expected_head']
+                head_len = len(expected_head)
+        except urllib.error.HTTPError as error:
+            LOGGER.info("State Head length is not 128 hex character long")
+        assert head_len == head 
+
+    
+    def test_api_get_each_batch_id_length(self, setup):
+        """Tests the each batch id length should be 128 hex character long 
+        """   
+        try:
+            block_list = get_blocks()
+            for batch in block_list['data']:
+                expected_head = batch['header']['batch_ids'][0]
+                head_len = len(expected_head)
+        except urllib.error.HTTPError as error:
+            LOGGER.info("Batch id length is not 128 hex character long")
+        assert head_len == head     
+        
+    def test_api_get_first_block_id_length(self, setup):
+        """Tests the first block id length should be 128 hex character long 
+        """   
+        try: 
+            for block_list in get_blocks():
+                batch_list = get_batches()
+                for block in batch_list:
+                    expected_head = batch_list['head']
+                    head_len = len(expected_head)
+        except urllib.error.HTTPError as error:
+            LOGGER.info("Block id length is not 128 hex character long")
+        assert head_len == head
+        
+    def test_api_get_transaction_id_length(self, setup):
+        """Tests the transaction id length should be 128 hex character long 
+        """   
+        try:
+            transaction_list = get_transactions()
+            for trans in transaction_list['data']:
+                transaction_ids = trans['header_signature']
+                head_len = len(transaction_ids)
+        except urllib.error.HTTPError as error:
+            LOGGER.info("Transaction id length is not 128 hex character long")
+        assert head_len == head
+    
            
 #     def test_api_get_batch_list_no_batches(self):
 #         """Tests that transactions are submitted and committed for
