@@ -23,6 +23,7 @@ from fixtures import setup_batch , delete_genesis
 from utils import get_batches, _get_node_list, _get_node_chain, check_for_consensus
 
 from base import RestApiBaseTest
+head = 128
 
 pytestmark = [pytest.mark.get , pytest.mark.batch]
 
@@ -47,7 +48,96 @@ class TestBatchList(RestApiBaseTest):
 
         self.assert_check_family(response)
         self.assert_check_batch_nonce(response)
-
+        
+    def test_rest_api_blk_content_head_signature(self, setup):
+        """Tests that head signature of each batch of the block
+        should be not none
+        """
+        try:
+            block_list = get_blocks()
+            for batch in block_list['data']:
+                batch_list = get_batches()
+                for block in batch_list:
+                    transaction_list = get_transactions()
+                    for trans in transaction_list['data']:
+                        head_signature = trans['header_signature']
+        except urllib.error.HTTPError as error:
+            LOGGER.info("Header signature is missing in some of the batches")    
+        assert head_signature is not None, "Head signature is available for all batches in block"
+    
+    def test_rest_api_blk_signer_key_ids_list_head(self, setup):
+        """Tests block content with signer key, transaction, batch, 
+        block lists and ids.  
+        """
+        try:
+            block_list = setup
+            for batchcount in enumerate(block_list, start=1):
+                assert 'expected_txns' in setup
+                assert 'signer_key' in setup
+                assert 'address' in setup
+                assert 'header' in setup
+                assert 'transaction_list' in setup
+                assert 'trace' in setup
+                assert 'block_list' in setup
+                assert 'transactions' in setup
+                assert 'batch_list' in setup
+                assert 'block_ids' in setup
+                assert 'expected_batches' in setup
+                assert 'batch_ids' in setup
+                assert 'state_head' in setup
+                assert 'header_signature' in setup
+                assert 'transaction_ids' in setup
+                assert 'expected_head' in setup
+        except urllib.error.HTTPError as error:
+            LOGGER.info("Some of the parameters of blocks are missing")        
+    
+    def test_rest_api_check_blocks_count(self, setup):
+        """Tests blocks count from block list 
+        """
+        count =0
+        try:
+            block_list = get_blocks()
+            for block in enumerate(block_list['data']):
+                count = count+1
+        except urllib.error.HTTPError as error:
+            LOGGER.info("BLock count not able to collect")
+        #assert count == _get_batch_list
+        
+    def test_rest_api_check_batches_count(self, setup):
+        """Tests batches count from batch list 
+        """
+        count =0
+        try:
+            batch_list = get_batches()
+            for batch in enumerate(batch_list['data']):
+                count = count+1
+        except urllib.error.HTTPError as error:
+            LOGGER.info("Batch count not able to collect")
+        #assert count == _get_block_list
+        
+    def test_rest_api_check_transactions_count(self, setup):
+        """Tests transaction count from transaction list 
+        """
+        count =0
+        try:
+            batch_list = get_transactions()
+            for batch in enumerate(batch_list['data']):
+                count = count+1
+        except urllib.error.HTTPError as error:
+            LOGGER.info("Transaction count not able to collect")
+        #assert count == _get_transaction_list
+        
+    def test_rest_api_check_state_count(self, setup):
+        """Tests state count from state list 
+        """
+        count =0
+        try:
+            state_list = get_state_list()['data']
+            for batch in enumerate(state_list):
+                count = count+1
+        except urllib.error.HTTPError as error:
+            LOGGER.info("State count not able to collect")
+        #assert count == _get_state_list
 
     def test_api_get_each_state_head_length(self, setup):
         """Tests the each state head length should be 128 hex character long 
