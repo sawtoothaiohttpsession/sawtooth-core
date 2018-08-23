@@ -42,7 +42,7 @@ func main() {
 		level = logging.INFO
 	}
 	if *vv {
-		level = logging.DEBUG
+		level = logging.INFO
 	}
 
 	logger := logging.Get()

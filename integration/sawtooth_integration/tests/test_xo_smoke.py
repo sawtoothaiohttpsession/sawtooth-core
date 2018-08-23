@@ -24,7 +24,7 @@ from sawtooth_integration.tests.integration_tools import wait_for_rest_apis
 
 
 LOGGER = logging.getLogger(__name__)
-LOGGER.setLevel(logging.DEBUG)
+LOGGER.setLevel(logging.INFO)
 
 
 WAIT = 300

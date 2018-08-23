@@ -62,7 +62,7 @@ def create_console_handler(verbose_level):
     elif verbose_level == 1:
         clog.setLevel(logging.INFO)
     else:
-        clog.setLevel(logging.DEBUG)
+        clog.setLevel(logging.INFO)
 
     return clog
 

@@ -27,7 +27,7 @@ from sawtooth_integration.tests.integration_tools import wait_for_rest_apis
 
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.StreamHandler())
-LOGGER.setLevel(logging.DEBUG)
+LOGGER.setLevel(logging.INFO)
 
 TEST_PRIVKEY = \
     '2f1e7b7a130d7ba9da0068b3bb0ba1d79e7e77110302c9f746c3c2a63fe40088'

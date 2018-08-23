@@ -29,7 +29,7 @@ from sawtooth_sdk.messaging.exceptions import WorkloadConfigurationError
 PendingBatch = namedtuple('PendingBatch', ['id', 'url'])
 
 LOGGER = logging.getLogger(__name__)
-LOGGER.setLevel(logging.DEBUG)
+LOGGER.setLevel(logging.INFO)
 
 
 class WorkloadGenerator:

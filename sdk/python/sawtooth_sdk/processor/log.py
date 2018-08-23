@@ -48,7 +48,7 @@ def create_console_handler(verbose_level):
     elif verbose_level == 1:
         clog.setLevel(logging.INFO)
     else:
-        clog.setLevel(logging.DEBUG)
+        clog.setLevel(logging.INFO)
 
     return clog
 
@@ -60,7 +60,7 @@ def init_console_logging(verbose_level=2):
         verbose_level (int): The log level that the console should print out
     """
     logger = logging.getLogger()
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.INFO)
     logger.addHandler(create_console_handler(verbose_level))
 
 
@@ -80,7 +80,7 @@ def log_configuration(log_config=None, log_dir=None, name=None):
         debug_handler.setFormatter(logging.Formatter(
             '[%(asctime)s.%(msecs)03d [%(threadName)s] %(module)s'
             ' %(levelname)s] %(message)s', "%H:%M:%S"))
-        debug_handler.setLevel(logging.DEBUG)
+        debug_handler.setLevel(logging.INFO)
 
         error_handler = logging.FileHandler(log_filename + "-error.log")
         error_handler.setFormatter(logging.Formatter(

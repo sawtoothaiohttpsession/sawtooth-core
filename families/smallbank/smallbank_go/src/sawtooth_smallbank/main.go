@@ -54,7 +54,7 @@ func main() {
 	case 1:
 		loggingLevel = logging.INFO
 	default:
-		loggingLevel = logging.DEBUG
+		loggingLevel = logging.INFO
 	}
 	logger.SetLevel(loggingLevel)
 

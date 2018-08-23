@@ -59,7 +59,7 @@ func main() {
 
 	switch len(opts.Verbose) {
 	case 2:
-		logger.SetLevel(logging.DEBUG)
+		logger.SetLevel(logging.INFO)
 	case 1:
 		logger.SetLevel(logging.INFO)
 	default:
