@@ -41,14 +41,15 @@ from sawtooth_rest_api.protobuf.transaction_pb2 import Transaction
 
 from utils import post_batch, get_state_list , get_blocks , get_transactions, \
                   get_batches , get_state_address, check_for_consensus,\
-                  _get_node_list, _get_node_chains, post_batch_no_endpoint
+                  _get_node_list, _get_node_chains, post_batch_no_endpoint, get_reciepts
                   
 
 from payload import get_signer, create_intkey_transaction, create_batch,\
                     create_intkey_same_transaction
 
 from base import RestApiBaseTest
-from fixtures import setup_valinv_txns, setup_invval_txns, setup_invalid_txns
+from fixtures import setup_valinv_txns, setup_invval_txns, setup_invalid_txns, setup_same_txns, setup_invalid_txns_min, setup_invalid_txns_max,\
+                      setup_valid_txns, setup_invalid_txns_fn, setup_invalid_invaddr
 
 
 LOGGER = logging.getLogger(__name__)
@@ -370,8 +371,9 @@ class TestPost(RestApiBaseTest):
                 errdata = e.file.read().decode("utf-8")
                 errcode = e.code
             assert errcode == 404
-
+    
 class TestPostMulTxns(RestApiBaseTest):
+    
     def test_txn_invalid_addr(self, setup_invalid_txns):
         initial_batch_length = setup_invalid_txns['initial_batch_length']
         expected_batch_length = setup_invalid_txns['expected_batch_length']
@@ -380,6 +382,24 @@ class TestPostMulTxns(RestApiBaseTest):
         assert initial_batch_length < expected_batch_length
         assert initial_trn_length < expected_trn_length
         assert setup_invalid_txns['response'] == 'INVALID'
+        
+    def test_txn_invalid_min(self, setup_invalid_txns_min):
+        initial_batch_length = setup_invalid_txns_min['initial_batch_length']
+        expected_batch_length = setup_invalid_txns_min['expected_batch_length']
+        initial_trn_length = setup_invalid_txns_min['initial_trn_length']
+        expected_trn_length = setup_invalid_txns_min['expected_trn_length']
+        assert initial_batch_length < expected_batch_length
+        assert initial_trn_length < expected_trn_length
+        assert setup_invalid_txns_min['response'] == 'INVALID'
+        
+    def test_txn_invalid_max(self, setup_invalid_txns_max):
+        initial_batch_length = setup_invalid_txns_max['initial_batch_length']
+        expected_batch_length = setup_invalid_txns_max['expected_batch_length']
+        initial_trn_length = setup_invalid_txns_max['initial_trn_length']
+        expected_trn_length = setup_invalid_txns_max['expected_trn_length']
+        assert initial_batch_length < expected_batch_length
+        assert initial_trn_length < expected_trn_length
+        assert setup_invalid_txns_max['response'] == 'INVALID'
         
     def test_txn_valid_invalid_txns(self, setup_valinv_txns):
         #data=Txns.setup_batch_valinv_txns()
@@ -391,7 +411,7 @@ class TestPostMulTxns(RestApiBaseTest):
         assert initial_trn_length < expected_trn_length
         assert setup_valinv_txns['response'] == 'INVALID'
         
-    def test_txn_invalid_valid_txns(self, setup_invval_txns):
+    def test_txn_invalid_valid_txns(self, setup_invval_txns):     
         initial_batch_length = setup_invval_txns['initial_batch_length']
         expected_batch_length = setup_invval_txns['expected_batch_length']
         initial_trn_length = setup_invval_txns['initial_trn_length']
@@ -399,10 +419,49 @@ class TestPostMulTxns(RestApiBaseTest):
         assert initial_batch_length < expected_batch_length
         assert initial_trn_length < expected_trn_length
         assert setup_invval_txns['response'] == 'INVALID'
-        
-  
-
-        
+       
+    def test_txn_same_txns(self, setup_same_txns):
+        initial_batch_length = setup_same_txns['initial_batch_length']
+        expected_batch_length = setup_same_txns['expected_batch_length']
+        initial_trn_length = setup_same_txns['initial_trn_length']
+        expected_trn_length = setup_same_txns['expected_trn_length']
+        assert initial_batch_length < expected_batch_length
+        assert initial_trn_length < expected_trn_length
+        assert setup_same_txns['code'] == 30
     
-        
+    def test_api_sent_commit_txns(self, setup_valid_txns):
+        expected_transaction=setup_valid_txns['expected_txns']
+         
+        transaction_id=str(expected_transaction)[2:-2]
+        try:   
+             response = get_reciepts(transaction_id)
+             assert transaction_id == response['data'][0]['id'] 
+             assert response['data'][0]['state_changes'][0]['type'] == "SET"    
+        except urllib.error.HTTPError as error:
+             LOGGER.info("Rest Api is Unreachable")
+             response = json.loads(error.fp.read().decode('utf-8'))
+             LOGGER.info(response['error']['title'])
+             LOGGER.info(response['error']['message'])
+             assert response['error']['code'] == RECEIPT_NOT_FOUND
+             assert response['error']['title'] == 'Invalid Resource Id'
+    
+    def test_txn_invalid_family_name(self, setup_invalid_txns_fn):
+        initial_batch_length = setup_invalid_txns_fn['initial_batch_length']
+        expected_batch_length = setup_invalid_txns_fn['expected_batch_length']
+        initial_trn_length = setup_invalid_txns_fn['initial_trn_length']
+        expected_trn_length = setup_invalid_txns_fn['expected_trn_length']
+        assert initial_batch_length < expected_batch_length
+        assert initial_trn_length < expected_trn_length
+        assert setup_invalid_txns_fn['code'] == 17
+    
+    def test_txn_invalid_bad_addr(self, setup_invalid_invaddr):
+        initial_batch_length = setup_invalid_invaddr['initial_batch_length']
+        expected_batch_length = setup_invalid_invaddr['expected_batch_length']
+        initial_trn_length = setup_invalid_invaddr['initial_trn_length']
+        expected_trn_length = setup_invalid_invaddr['expected_trn_length']
+        assert initial_batch_length < expected_batch_length
+        assert initial_trn_length < expected_trn_length
+        assert setup_invalid_invaddr['code'] == 17
       
+        
+   
