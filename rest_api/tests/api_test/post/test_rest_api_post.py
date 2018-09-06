@@ -41,13 +41,15 @@ from sawtooth_rest_api.protobuf.transaction_pb2 import Transaction
 
 from utils import post_batch, get_state_list , get_blocks , get_transactions, \
                   get_batches , get_state_address, check_for_consensus,\
-                  _get_node_list, _get_node_chains
+                  _get_node_list, _get_node_chains, post_batch_no_endpoint
                   
 
 from payload import get_signer, create_intkey_transaction, create_batch,\
                     create_intkey_same_transaction
 
 from base import RestApiBaseTest
+from fixtures import setup_valinv_txns, setup_invval_txns, setup_invalid_txns
+
 
 LOGGER = logging.getLogger(__name__)
 LOGGER.setLevel(logging.INFO)
@@ -63,9 +65,10 @@ WRONG_CONTENT_TYPE = 43
 BLOCK_TO_CHECK_CONSENSUS = 1
 
 pytestmark = pytest.mark.post
-
+data = {}
 
 class TestPost(RestApiBaseTest):
+    
     def test_rest_api_post_batch(self):
         """Tests that transactions are submitted and committed for
         each block that are created by submitting intkey batches
@@ -352,25 +355,54 @@ class TestPost(RestApiBaseTest):
                 LOGGER.info(data['error']['message'])
                 assert data['error']['code'] == 30
                 assert data['error']['title'] =='Submitted Batches Invalid' 
-                    
-    def test_api_post_batch_different_signer(self, setup):
+    
+    def test_rest_api_post_no_endpoint(self, setup):
+        
         signer_trans = get_signer() 
         intkey=create_intkey_transaction("set",[],50,signer_trans)
         translist=[intkey]
-        signer_batch = get_signer()
-        batch= create_batch(translist,signer_batch)
+        batch= create_batch(translist,signer_trans)
         batch_list=[BatchList(batches=[batch]).SerializeToString()]
         for batc in batch_list:
             try:
-                response = post_batch(batc)
-                print(response)
-            except urllib.error.HTTPError as error:
-                LOGGER.info("Rest Api is not reachable")
-                data = json.loads(error.fp.read().decode('utf-8'))
-                LOGGER.info(data['error']['title'])
-                LOGGER.info(data['error']['message'])
-                assert data['error']['code'] == 30
-                assert data['error']['title'] =='Submitted Batches Invalid'
-    
+                response = post_batch_no_endpoint(batc)
+            except urllib.error.HTTPError as e:
+                errdata = e.file.read().decode("utf-8")
+                errcode = e.code
+            assert errcode == 404
+
+class TestPostMulTxns(RestApiBaseTest):
+    def test_txn_invalid_addr(self, setup_invalid_txns):
+        initial_batch_length = setup_invalid_txns['initial_batch_length']
+        expected_batch_length = setup_invalid_txns['expected_batch_length']
+        initial_trn_length = setup_invalid_txns['initial_trn_length']
+        expected_trn_length = setup_invalid_txns['expected_trn_length']
+        assert initial_batch_length < expected_batch_length
+        assert initial_trn_length < expected_trn_length
+        assert setup_invalid_txns['response'] == 'INVALID'
+        
+    def test_txn_valid_invalid_txns(self, setup_valinv_txns):
+        #data=Txns.setup_batch_valinv_txns()
+        initial_batch_length = setup_valinv_txns['initial_batch_length']
+        expected_batch_length = setup_valinv_txns['expected_batch_length']
+        initial_trn_length = setup_valinv_txns['initial_trn_length']
+        expected_trn_length = setup_valinv_txns['expected_trn_length']
+        assert initial_batch_length < expected_batch_length
+        assert initial_trn_length < expected_trn_length
+        assert setup_valinv_txns['response'] == 'INVALID'
+        
+    def test_txn_invalid_valid_txns(self, setup_invval_txns):
+        initial_batch_length = setup_invval_txns['initial_batch_length']
+        expected_batch_length = setup_invval_txns['expected_batch_length']
+        initial_trn_length = setup_invval_txns['initial_trn_length']
+        expected_trn_length = setup_invval_txns['expected_trn_length']
+        assert initial_batch_length < expected_batch_length
+        assert initial_trn_length < expected_trn_length
+        assert setup_invval_txns['response'] == 'INVALID'
+        
+  
 
         
+    
+        
+      

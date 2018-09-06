@@ -18,6 +18,8 @@ import logging
 import urllib
 import json
 import os
+import random
+import hashlib
 
 from sawtooth_signing import create_context
 from sawtooth_signing import CryptoFactory
@@ -40,17 +42,20 @@ from google.protobuf.json_format import MessageToDict
 
 from utils import get_batches,  get_transactions, get_state_address, post_batch, get_blocks, \
                   get_state_list , _delete_genesis , _start_validator, \
-                  _stop_validator , _create_genesis, _get_client_address, \
-                  _stop_settings_tp, _start_settings_tp
+                  _stop_validator , _create_genesis , _get_client_address, \
+                  _stop_settings_tp, _start_settings_tp, batch_count, transaction_count, get_batch_statuses
 
 from payload import get_signer, create_intkey_transaction , create_batch,\
-                    create_invalid_intkey_transaction
-
+                    create_invalid_intkey_transaction, create_intkey_same_transaction, random_word_list, IntKeyPayload, \
+                    make_intkey_address, Transactions
                
 LOGGER = logging.getLogger(__name__)
 LOGGER.setLevel(logging.INFO)
                   
-                  
+LIMIT = 100  
+         
+
+data = {}
 
 @pytest.fixture(scope="function")
 def break_genesis(request):
@@ -132,6 +137,34 @@ def invalid_batch():
     
     return data
 
+@pytest.fixture(scope="function")
+def setup_valinv_txns(request):
+    """Setup method for posting batches and returning the 
+       response
+    """
+    Txns=Transactions(invalidtype="addr")
+    data = Txns.get_batch_valinv_txns()
+    return data
+   
+@pytest.fixture(scope="function")
+def setup_invval_txns(request):
+    """Setup method for posting batches and returning the 
+       response
+    """
+    Txns=Transactions(invalidtype="addr")
+    data = Txns.get_batch_invval_txns()
+    return data
+
+@pytest.fixture(scope="function")
+def setup_invalid_txns(request):
+    """Setup method for posting batches and returning the 
+       response
+    """
+    Txns=Transactions(invalidtype="addr")
+    data = Txns.get_batch_invalid_txns()
+    return data
+    
+    
 
 @pytest.fixture(scope="function")
 def setup_batch_multiple_transaction():
@@ -172,6 +205,8 @@ def setup_batch_multiple_transaction():
         LOGGER.info(data['error']['message'])    
     
     return expected_trxns
+
+
 
 
 
