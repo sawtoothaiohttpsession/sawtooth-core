@@ -407,4 +407,45 @@ class TestBlockGet(RestApiBaseTest):
             response = json.loads(error.fp.read().decode('utf-8'))
             LOGGER.info(response['error']['title'])
             LOGGER.info(response['error']['message'])
+            
+    def test_api_blk_debug_flag_set_proper(self, setup):
+        """Tests that block debug flag should set proper
+        for true and false value
+        """
+        try:
+            block_list = get_blocks()
+            for batch in block_list['data']:
+                batch_list = get_batches()
+                for trans in batch_list['data']:
+                    trace = trans['trace']
+        except urllib.error.HTTPError as error:
+            LOGGER.info("Debug flag is not set for tracing")
+        assert trace is not None, "Debug flag is set for tracing"
+        
+    def test_api_blk_payload_present_unique(self, setup):
+        """Tests that block payload is should be present
+        and unique for each batch in the block
+        """
+        prev_line = ''
+        try:
+            with open ('payload.txt', 'w') as f:
+                block_list = get_blocks()
+                for batch in block_list['data']:
+                    batch_list = get_batches()
+                    for block in batch_list:
+                        transaction_list = get_transactions()
+                        for trans in transaction_list['data']:
+                            payload = trans['payload']
+                            f.write(payload)
+            with open('payload.txt', 'r') as f:
+                payloads = f.readlines()
+                for payload in payloads:
+                    if prev_line < payload:
+                        LOGGER.info("Payload is unique in each transaction")
+                    prev_line = payload
+        except urllib.error.HTTPError as error:
+            LOGGER.info("Payload is missing in some of the transactions")
+        assert payload is not None, "Payload is unique and available for all transactions in batch"
+
+
 
