@@ -287,15 +287,10 @@ def _make_http_address(node_number):
     return node_number
 
 def _get_client_address():
-    command = "ifconfig lo | grep 'inet addr' | cut -d ':' -f 2 | cut -d ' ' -f 1"
-    node_ip = subprocess.check_output(command , shell=True).decode().strip().replace("'", '"')
-    return 'http://' + node_ip + ':8008'
-    '''
     command = "hostname -I | awk '{print $1}'"
     node_ip = subprocess.check_output(command , shell=True).decode().strip().replace("'", '"')
     return 'http://' + node_ip + ':8008'
-    '''
-
+    
 def _start_validator():
     LOGGER.info('Starting the validator')
     cmd = "sudo -u sawtooth sawtooth-validator -vv"
