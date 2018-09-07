@@ -21,10 +21,13 @@ pub mod merkle;
 pub mod merkle_ffi;
 pub mod settings_view;
 pub mod state_pruning_manager;
+pub mod state_view_factory;
+pub mod state_view_ffi;
 
 use state::error::StateDatabaseError;
+pub type StateIter = Iterator<Item = Result<(String, Vec<u8>), StateDatabaseError>>;
 
-pub trait StateReader {
+pub trait StateReader: Send + Sync {
     /// Returns true if the given address exists in State; false, otherwise.
     ///
     /// Will return a StateDatabaseError if any errors occur while querying for
@@ -44,11 +47,5 @@ pub trait StateReader {
     ///
     /// Returns Err if the prefix is invalid, or if any other database errors
     /// occur while creating the iterator.
-    fn leaves(
-        &self,
-        prefix: Option<&str>,
-    ) -> Result<
-        Box<Iterator<Item = Result<(String, Vec<u8>), StateDatabaseError>>>,
-        StateDatabaseError,
-    >;
+    fn leaves(&self, prefix: Option<&str>) -> Result<Box<StateIter>, StateDatabaseError>;
 }

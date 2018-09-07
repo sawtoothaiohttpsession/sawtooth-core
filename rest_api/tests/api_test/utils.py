@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ------------------------------------------------------------------------------
-  
+
 import pytest
 import logging
 import json
@@ -33,14 +33,14 @@ import time
 import socket
 import netifaces
 
-    
+
 LOGGER = logging.getLogger(__name__)
 LOGGER.setLevel(logging.INFO)
-    
+
 WAIT = 300
 
 
-def get_blocks(head_id=None , id=None , start=None , limit=None , reverse=None):  
+def get_blocks(head_id=None , id=None , start=None , limit=None , reverse=None):
     if all(v is not None for v in [head_id , id]):
         response = query_rest_api('/blocks?head={}&id={}'.format(head_id , id))
         return response
@@ -49,13 +49,13 @@ def get_blocks(head_id=None , id=None , start=None , limit=None , reverse=None):
         return response
     if limit is not None:
         response = query_rest_api('/blocks?limit=%s'% limit)
-        return response 
+        return response
     if start is not None:
         response = query_rest_api('/blocks?start=%s'% start)
-        return response 
+        return response
     if head_id is not None:
         response = query_rest_api('/blocks?head=%s'% head_id)
-        return response 
+        return response
     if id is not None:
         response = query_rest_api('/blocks?id=%s'% id)
         return response
@@ -67,7 +67,7 @@ def get_blocks(head_id=None , id=None , start=None , limit=None , reverse=None):
         return response
 
 
-def get_batches(head_id=None , id=None , start=None , limit=None, reverse=None):  
+def get_batches(head_id=None , id=None , start=None , limit=None, reverse=None):
     if all(v is not None for v in [head_id , id]):
         response = query_rest_api('/batches?head={}&id={}'.format(head_id , id))
         return response
@@ -76,13 +76,13 @@ def get_batches(head_id=None , id=None , start=None , limit=None, reverse=None):
         return response
     if limit is not None:
         response = query_rest_api('/batches?limit=%s'% limit)
-        return response 
+        return response
     if start is not None:
         response = query_rest_api('/batches?start=%s'% start)
-        return response 
+        return response
     if head_id is not None:
         response = query_rest_api('/batches?head=%s'% head_id)
-        return response 
+        return response
     if id is not None:
         response = query_rest_api('/batches?id=%s'% id)
         return response
@@ -118,13 +118,13 @@ def get_transactions(head_id=None , id=None , start=None , limit=None , reverse=
         return response
     if limit is not None:
         response = query_rest_api('/transactions?limit=%s'% limit)
-        return response 
+        return response
     if start is not None:
         response = query_rest_api('/transactions?start=%s'% start)
-        return response 
+        return response
     if head_id is not None:
         response = query_rest_api('/transactions?head=%s'% head_id)
-        return response 
+        return response
     if id is not None:
         response = query_rest_api('/transactions?id=%s'% id)
         return response
@@ -144,13 +144,13 @@ def get_state_list(head_id=None , address=None , start=None , limit=None , rever
         return response
     if limit is not None:
         response = query_rest_api('/state?limit=%s'% limit)
-        return response 
+        return response
     if start is not None:
         response = query_rest_api('/state?start=%s'% start)
-        return response 
+        return response
     if head_id is not None:
         response = query_rest_api('/state?head=%s'% head_id)
-        return response 
+        return response
     if address is not None:
         response = query_rest_api('/state?address=%s'% address)
         return response
@@ -167,25 +167,25 @@ def get_state_address(address):
 
 def post_batch(batch, headers="None"):
     if headers=="True":
-        headers = {'Content-Type': 'application/json'}  
+        headers = {'Content-Type': 'application/json'}
     else:
         headers = {'Content-Type': 'application/octet-stream'}
-    
+
     response = query_rest_api(
         '/batches', data=batch, headers=headers)
-    
+
     response = submit_request('{}&wait={}'.format(response['link'], WAIT))
     return response
 
 def post_batch_no_endpoint(batch, headers="None"):
     if headers=="True":
-        headers = {'Content-Type': 'application/json'}  
+        headers = {'Content-Type': 'application/json'}
     else:
         headers = {'Content-Type': 'application/octet-stream'}
-    
+
     response = query_rest_api(
         '/', data=batch, headers=headers)
-    
+
     response = submit_request('{}&wait={}'.format(response['link'], WAIT))
     return response
 
@@ -218,13 +218,13 @@ def _get_node_chain(node_list):
         except:
             LOGGER.warning("Couldn't connect to %s REST API", node)
     return chain_list
-    
+
 def _get_node_list():
     client_address = _get_client_address()
     node_list = [_make_http_address(peer) for peer in _get_peers_list(client_address)]
     node_list.append(_get_client_address())
     return node_list
-        
+
 
 def _get_peers_list(rest_client, fmt='json'):
     cmd_output = _run_peer_command(
@@ -249,7 +249,7 @@ def _get_node_chains(node_list):
         except:
             LOGGER.warning("Couldn't connect to %s REST API", node)
     return chain_list
-    
+
 def check_for_consensus(chains , block_num):
     LOGGER.info("Checking Consensus on block number %s" , block_num)
     blocks = []
@@ -286,16 +286,21 @@ def _make_http_address(node_number):
     node_number = node.replace('8800' , '8008')
     return node_number
 
-def _get_client_address(): 
+def _get_client_address():
+    command = "ifconfig lo | grep 'inet addr' | cut -d ':' -f 2 | cut -d ' ' -f 1"
+    node_ip = subprocess.check_output(command , shell=True).decode().strip().replace("'", '"')
+    return 'http://' + node_ip + ':8008'
+    '''
     command = "hostname -I | awk '{print $1}'"
     node_ip = subprocess.check_output(command , shell=True).decode().strip().replace("'", '"')
     return 'http://' + node_ip + ':8008'
-    
+    '''
+
 def _start_validator():
     LOGGER.info('Starting the validator')
     cmd = "sudo -u sawtooth sawtooth-validator -vv"
     subprocess.Popen(cmd, shell=True, stderr=subprocess.PIPE)
-    
+
 def _stop_validator():
     LOGGER.info('Stopping the validator')
     cmd = "sudo kill -9  $(ps aux | grep 'sawtooth-validator' | awk '{print $2}')"
@@ -310,7 +315,7 @@ def _start_settings_tp():
 def _stop_settings_tp():
     LOGGER.info('Stopping the settings-tp')
     cmd = "sudo kill -9  $(ps aux | grep 'settings-tp' | awk '{print $2}')"
-    subprocess.Popen(cmd, shell=True, stderr=subprocess.PIPE) 
+    subprocess.Popen(cmd, shell=True, stderr=subprocess.PIPE)
 
 def _create_genesis():
     LOGGER.info("creating the genesis data")
@@ -318,15 +323,15 @@ def _create_genesis():
     os.chdir("/home/aditya")
     cmd = "sawadm genesis config-genesis.batch"
     subprocess.Popen(cmd, shell=True, stderr=subprocess.PIPE)
-    
-    
+
+
 def _create_genesis_batch():
     LOGGER.info("creating the config genesis batch")
     os.chdir("/home/aditya")
     cmd = "sawset genesis --force"
     subprocess.Popen(cmd, shell=True, stderr=subprocess.PIPE)
-    
-    
+
+
 def post_batch_statuses(batch):
     headers = {'content-type': 'application/json'}
     response = query_rest_api(
@@ -338,7 +343,7 @@ def get_batch_statuses(batch_ids=None, wait=None):
         batches = ",".join(batch_ids)
     except:
         batches = None
-    
+
     if batches:
         if wait == 'default':
             response = query_rest_api('/batch_statuses?wait&id={}'.format(batches))
@@ -348,11 +353,11 @@ def get_batch_statuses(batch_ids=None, wait=None):
             return response
         else:
             response = query_rest_api('/batch_statuses?id=%s' % batches)
-            return response       
+            return response
     else:
         response = query_rest_api('/batch_statuses')
         return response
-    
+
 def get_state_limit(limit):
     response = query_rest_api('/state?limit=%s' % limit)
     return response
@@ -374,16 +379,16 @@ def batch_count():
         next_position = batch_list['paging']['next_position']
     except:
         next_position = None
-    
+
     while(next_position):
         batch_list = get_batches(start=next_position)
         try:
             next_position = batch_list['paging']['next_position']
         except:
             next_position = None
-        
+
         count += len(batch_list['data'])
-    return count   
+    return count
 
 def transaction_count():
     transaction_list = get_transactions()
@@ -392,16 +397,16 @@ def transaction_count():
         next_position = transaction_list['paging']['next_position']
     except:
         next_position = None
-    
+
     while(next_position):
         transaction_list = get_transactions(start=next_position)
         try:
             next_position = transaction_list['paging']['next_position']
         except:
             next_position = None
-        
+
         count += len(transaction_list['data'])
-    return count 
+    return count
 
 def _create_expected_link(expected_ids):
     for id in expected_ids:
@@ -410,12 +415,12 @@ def _create_expected_link(expected_ids):
 
 def _get_batch_list(response):
     batch_list = response['data']
-    
+
     try:
         next_position = response['paging']['next_position']
     except:
         next_position = None
-        
+
     while(next_position):
         response = get_batches(start=next_position)
         data_list = response['data']
@@ -423,20 +428,20 @@ def _get_batch_list(response):
             next_position = response['paging']['next_position']
         except:
             next_position = None
-                      
+
         batch_list += data_list
-            
+
     return batch_list
 
 
 def _get_transaction_list(response):
     transaction_list = response['data']
-    
+
     try:
         next_position = response['paging']['next_position']
     except:
         next_position = None
-        
+
     while(next_position):
         response = get_transactions(start=next_position)
         data_list = response['data']
@@ -444,8 +449,7 @@ def _get_transaction_list(response):
             next_position = response['paging']['next_position']
         except:
             next_position = None
-                      
-        transaction_list += data_list
-            
-    return transaction_list
 
+        transaction_list += data_list
+
+    return transaction_list

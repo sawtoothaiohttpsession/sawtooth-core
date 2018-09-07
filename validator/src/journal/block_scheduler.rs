@@ -21,6 +21,7 @@ use std::sync::{Arc, Mutex};
 use block::Block;
 use journal::block_validator::BlockStatusStore;
 use journal::block_wrapper::BlockStatus;
+use journal::chain::COMMIT_STORE;
 use journal::{block_manager::BlockManager, NULL_BLOCK_IDENTIFIER};
 use metrics;
 
@@ -120,12 +121,12 @@ impl<B: BlockStatusStore> BlockSchedulerState<B> {
                 continue;
             }
 
-            if &block.previous_block_id != NULL_BLOCK_IDENTIFIER
-                && self.block_status_store.status(&block.previous_block_id) == BlockStatus::Unknown
+            if block.previous_block_id != NULL_BLOCK_IDENTIFIER
+                && self.block_validity(&block.previous_block_id) == BlockStatus::Unknown
             {
                 info!(
-                    "During block scheduling, predecessor of block {} status is unknown. Scheduling all blocks since last predecessor with known status",
-                    &block.header_signature);
+                    "During block scheduling, predecessor of block {}, {}, status is unknown. Scheduling all blocks since last predecessor with known status",
+                    &block.header_signature, &block.previous_block_id);
 
                 let blocks_previous_to_previous = self.block_manager
                         .branch(&block.previous_block_id)
@@ -134,13 +135,21 @@ impl<B: BlockStatusStore> BlockSchedulerState<B> {
 
                 let mut to_be_scheduled = vec![];
                 for predecessor in blocks_previous_to_previous {
-                    eprintln!("{}", &predecessor.header_signature);
                     if self
                         .block_status_store
                         .status(&predecessor.header_signature)
                         != BlockStatus::Unknown
                     {
                         break;
+                    }
+                    match self.block_manager.ref_block(&predecessor.header_signature) {
+                        Ok(_) => (),
+                        Err(err) => {
+                            warn!(
+                                "Failed to ref block {} during cache-miss block rescheduling: {:?}",
+                                &predecessor.header_signature, err
+                            );
+                        }
                     }
                     to_be_scheduled.push(predecessor);
                 }
@@ -164,12 +173,31 @@ impl<B: BlockStatusStore> BlockSchedulerState<B> {
         ready
     }
 
+    fn block_validity(&self, block_id: &str) -> BlockStatus {
+        let status = self.block_status_store.status(block_id);
+        if status == BlockStatus::Unknown {
+            match self
+                .block_manager
+                .get_from_blockstore(block_id, COMMIT_STORE)
+            {
+                Err(err) => {
+                    warn!("Error during checking block validity: {:?}", err);
+                    BlockStatus::Unknown
+                }
+                Ok(None) => BlockStatus::Unknown,
+                Ok(Some(_)) => BlockStatus::Valid,
+            }
+        } else {
+            status
+        }
+    }
+
     fn done(&mut self, block_id: &str) -> Vec<Block> {
         self.processing.remove(block_id);
         let ready = self
             .descendants_by_previous_id
             .remove(block_id)
-            .unwrap_or(vec![]);
+            .unwrap_or_default();
 
         for blk in &ready {
             self.pending.remove(&blk.header_signature);
@@ -425,7 +453,7 @@ mod tests {
                 .unwrap_or(BlockStatus::Unknown)
         }
     }
-
+    #[derive(Clone)]
     struct MockStore {}
 
     impl MockStore {

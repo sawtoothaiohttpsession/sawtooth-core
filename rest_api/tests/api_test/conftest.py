@@ -1,3 +1,4 @@
+
 # Copyright 2018 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ------------------------------------------------------------------------------
-  
 import pytest
 import sys
 import platform
@@ -101,6 +101,7 @@ def pytest_addoption(parser):
 
    
 def pytest_collection_modifyitems(config, items):
+
     """Filters tests based on markers when parameters passed
        through the cli
     """

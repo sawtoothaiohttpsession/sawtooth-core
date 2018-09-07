@@ -1,3 +1,4 @@
+
 # Copyright 2018 Intel Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ------------------------------------------------------------------------------
-  
 import pytest
 import logging
 import urllib
@@ -36,6 +36,7 @@ from sawtooth_rest_api.protobuf.batch_pb2 import BatchList
 from sawtooth_rest_api.protobuf.batch_pb2 import BatchHeader
 from sawtooth_rest_api.protobuf.transaction_pb2 import TransactionHeader
 from sawtooth_rest_api.protobuf.transaction_pb2 import Transaction
+
 
 from google.protobuf.json_format import MessageToDict
 
@@ -91,26 +92,26 @@ def invalid_batch():
     expected_trxns  = {}
     expected_batches = []
     address = _get_client_address()
-    
+
     LOGGER.info("Creating intkey transactions with set operations")
-    
+
     txns = [
         create_invalid_intkey_transaction("set", [] , 50 , signer),
     ]
-    
+
     for txn in txns:
         dict = MessageToDict(
                 txn,
                 including_default_value_fields=True,
                 preserving_proto_field_name=True)
-                
+
         expected_trxns['trxn_id'] = [dict['header_signature']]
 
-    
+
     LOGGER.info("Creating batches for transactions 1trn/batch")
 
     batches = [create_batch([txn], signer) for txn in txns]
-    
+
     for batch in batches:
         dict = MessageToDict(
                 batch,
@@ -119,13 +120,13 @@ def invalid_batch():
 
         batch_id = dict['header_signature']
         expected_batches.append(batch_id)
-    
+
     data['expected_txns'] = expected_trxns['trxn_id'][::-1]
     data['expected_batches'] = expected_batches[::-1]
     data['address'] = address
 
     post_batch_list = [BatchList(batches=[batch]).SerializeToString() for batch in batches]
-    
+
     for batch in post_batch_list:
         try:
             response = post_batch(batch)
@@ -134,7 +135,7 @@ def invalid_batch():
             response = json.loads(error.fp.read().decode('utf-8'))
             LOGGER.info(response['error']['title'])
             LOGGER.info(response['error']['message'])
-    
+
     return data
 
 @pytest.fixture(scope="function")
@@ -263,5 +264,3 @@ def setup_batch_multiple_transaction():
 
 
 
-
-    

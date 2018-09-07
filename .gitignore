@@ -31,14 +31,11 @@
 /families/**/__pycache__/
 /families/settings/build/
 /families/settings/sawtooth_settings/protobuf/
-/families/smallbank/smallbank_go/src/protobuf/
-/families/smallbank/smallbank_go/bin/
 /families/block_info/sawtooth_block_info/protobuf
 /families/identity/sawtooth_identity/protobuf
 /families/smallbank/smallbank_rust/target/
 /families/smallbank/smallbank_rust/Cargo.lock
 /families/smallbank/smallbank_rust/bin/
-/families/smallbank/smallbank_rust/src/smallbank.rs
 
 /coverage
 /coverage/html
@@ -63,11 +60,6 @@
 /sdk/examples/intkey_python/build/
 /sdk/examples/intkey_python/**/__pycache__/
 /sdk/examples/noop_python/**/__pycache__/
-/sdk/go/src/sawtooth_sdk/protobuf/
-/sdk/go/src/mocks/
-/sdk/go/src/github.com/
-/sdk/go/bin/
-/sdk/examples/intkey_go/bin/
 /sdk/examples/intkey_rust/target/
 /sdk/examples/intkey_rust/Cargo.lock
 /sdk/examples/intkey_rust/bin/
@@ -77,15 +69,8 @@
 /sdk/examples/xo_rust/target/
 /sdk/examples/xo_rust/Cargo.lock
 /sdk/examples/xo_rust/bin/
-/sdk/examples/xo_go/bin/
-/sdk/examples/noop_go/bin/
-/sdk/go/pkg/
-/sdk/go/src/golang.org/
-/sdk/go/src/gopkg.in/
 /sdk/rust/target
 /sdk/rust/Cargo.lock
-/sdk/rust/src/messages/*.rs
-!/sdk/rust/src/messages/mod.rs
 
 /signing/build/
 /signing/sawtooth_signing.egg-info/
@@ -99,13 +84,11 @@
 /validator/Cargo.lock
 /validator/bin/
 /validator/lib/
-/validator/src/proto
 
 /perf/sawtooth_perf/Cargo.lock
 /perf/sawtooth_perf/target/
 /perf/sawtooth_workload/Cargo.lock
 /perf/sawtooth_workload/target/
-/perf/smallbank_workload/src/smallbank.rs
 /perf/smallbank_workload/Cargo.lock
 /perf/smallbank_workload/target/
 /perf/smallbank_workload/bin/

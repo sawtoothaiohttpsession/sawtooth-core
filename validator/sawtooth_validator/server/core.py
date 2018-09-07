@@ -29,6 +29,8 @@ from sawtooth_validator.database.indexed_database import IndexedDatabase
 from sawtooth_validator.database.lmdb_nolock_database import LMDBNoLockDatabase
 from sawtooth_validator.database.native_lmdb import NativeLmdbDatabase
 from sawtooth_validator.journal.block_validator import BlockValidator
+from sawtooth_validator.journal.block_validator import \
+    BlockValidationResultStore
 from sawtooth_validator.journal.publisher import BlockPublisher
 from sawtooth_validator.journal.chain import ChainController
 from sawtooth_validator.journal.genesis import GenesisController
@@ -50,6 +52,7 @@ from sawtooth_validator.state.settings_cache import SettingsObserver
 from sawtooth_validator.state.settings_cache import SettingsCache
 from sawtooth_validator.state.identity_view import IdentityViewFactory
 from sawtooth_validator.state.state_view import StateViewFactory
+from sawtooth_validator.state.state_view import NativeStateViewFactory
 from sawtooth_validator.gossip.permission_verifier import PermissionVerifier
 from sawtooth_validator.gossip.permission_verifier import IdentityCache
 from sawtooth_validator.gossip.identity_observer import IdentityObserver
@@ -122,6 +125,7 @@ class Validator:
             global_state_db_filename,
             indexes=MerkleDatabase.create_index_configuration())
         state_view_factory = StateViewFactory(global_state_db)
+        native_state_view_factory = NativeStateViewFactory(global_state_db)
 
         # -- Setup Receipt Store -- #
         receipt_db_filename = os.path.join(
@@ -147,6 +151,8 @@ class Validator:
 
         block_manager = BlockManager()
         block_manager.add_store("commit_store", block_store)
+
+        block_status_store = BlockValidationResultStore()
 
         # -- Setup Thread Pools -- #
         component_thread_pool = InstrumentedThreadPoolExecutor(
@@ -300,8 +306,7 @@ class Validator:
             transaction_executor=transaction_executor,
             transaction_committed=block_store.has_transaction,
             batch_committed=block_store.has_batch,
-            state_view_factory=state_view_factory,
-            settings_cache=settings_cache,
+            state_view_factory=native_state_view_factory,
             block_sender=block_sender,
             batch_sender=batch_sender,
             chain_head=block_store.chain_head,
@@ -315,11 +320,9 @@ class Validator:
         block_validator = BlockValidator(
             block_manager=block_manager,
             block_store=block_store,
-            state_view_factory=state_view_factory,
+            view_factory=native_state_view_factory,
             transaction_executor=transaction_executor,
-            identity_signer=identity_signer,
-            data_dir=data_dir,
-            config_dir=config_dir,
+            block_status_store=block_status_store,
             permission_verifier=permission_verifier)
 
         chain_controller = ChainController(
@@ -328,6 +331,7 @@ class Validator:
             block_validator=block_validator,
             state_database=global_state_db,
             chain_head_lock=block_publisher.chain_head_lock,
+            block_status_store=block_status_store,
             consensus_notifier=consensus_notifier,
             state_pruning_block_depth=state_pruning_block_depth,
             fork_cache_keep_time=fork_cache_keep_time,
@@ -339,9 +343,6 @@ class Validator:
                 identity_observer,
                 settings_observer
             ])
-
-        block_validator.set_block_validity_fn(
-            chain_controller.block_validation_result)
 
         genesis_controller = GenesisController(
             context_manager=context_manager,
@@ -402,6 +403,8 @@ class Validator:
             consensus_proxy,
             consensus_notifier)
 
+        self._block_status_store = block_status_store
+
         self._consensus_dispatcher = consensus_dispatcher
         self._consensus_service = consensus_service
         self._consensus_thread_pool = consensus_thread_pool
@@ -415,6 +418,7 @@ class Validator:
         self._gossip = gossip
 
         self._block_publisher = block_publisher
+        self._block_validator = block_validator
         self._chain_controller = chain_controller
         self._block_validator = block_validator
 
@@ -434,6 +438,7 @@ class Validator:
 
         self._gossip.start()
         self._incoming_batch_sender = self._block_publisher.start()
+        self._block_validator.start()
         self._chain_controller.start()
 
         self._completer.set_on_batch_received(self._incoming_batch_sender.send)

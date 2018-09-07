@@ -29,6 +29,8 @@ use journal::publisher::{
     BlockPublisher, FinalizeBlockError, IncomingBatchSender, InitializeBlockError,
 };
 
+use state::state_view_factory::StateViewFactory;
+
 #[repr(u32)]
 #[derive(Debug)]
 pub enum ErrorCode {
@@ -54,8 +56,7 @@ pub unsafe extern "C" fn block_publisher_new(
     transaction_executor_ptr: *mut py_ffi::PyObject,
     batch_committed_ptr: *mut py_ffi::PyObject,
     transaction_committed_ptr: *mut py_ffi::PyObject,
-    state_view_factory_ptr: *mut py_ffi::PyObject,
-    settings_cache_ptr: *mut py_ffi::PyObject,
+    state_view_factory_ptr: *const c_void,
     block_sender_ptr: *mut py_ffi::PyObject,
     batch_sender_ptr: *mut py_ffi::PyObject,
     chain_head_ptr: *mut py_ffi::PyObject,
@@ -73,7 +74,6 @@ pub unsafe extern "C" fn block_publisher_new(
         batch_committed_ptr,
         transaction_committed_ptr,
         state_view_factory_ptr,
-        settings_cache_ptr,
         block_sender_ptr,
         batch_sender_ptr,
         chain_head_ptr,
@@ -91,8 +91,9 @@ pub unsafe extern "C" fn block_publisher_new(
     let transaction_executor = PyObject::from_borrowed_ptr(py, transaction_executor_ptr);
     let batch_committed = PyObject::from_borrowed_ptr(py, batch_committed_ptr);
     let transaction_committed = PyObject::from_borrowed_ptr(py, transaction_committed_ptr);
-    let state_view_factory = PyObject::from_borrowed_ptr(py, state_view_factory_ptr);
-    let settings_cache = PyObject::from_borrowed_ptr(py, settings_cache_ptr);
+    let state_view_factory = (state_view_factory_ptr as *const StateViewFactory)
+        .as_ref()
+        .unwrap();
     let block_sender = PyObject::from_borrowed_ptr(py, block_sender_ptr);
     let batch_sender = PyObject::from_borrowed_ptr(py, batch_sender_ptr);
     let chain_head = PyObject::from_borrowed_ptr(py, chain_head_ptr);
@@ -140,19 +141,12 @@ pub unsafe extern "C" fn block_publisher_new(
         .get(py, "BlockBuilder")
         .expect("Unable to import BlockBuilder from 'sawtooth_validator.journal.block_builder'");
 
-    let settings_view_class = py
-        .import("sawtooth_validator.state.settings_view")
-        .expect("Unable to import 'sawtooth_validator.state.settings_view'")
-        .get(py, "SettingsView")
-        .expect("Unable to import SettingsView from 'sawtooth_validator.state.settings_view'");
-
     let publisher = BlockPublisher::new(
         block_manager,
         transaction_executor,
         batch_committed,
         transaction_committed,
-        state_view_factory,
-        settings_cache,
+        state_view_factory.clone(),
         block_sender,
         batch_publisher,
         chain_head,
@@ -164,7 +158,6 @@ pub unsafe extern "C" fn block_publisher_new(
         batch_injector_factory,
         block_header_class,
         block_builder_class,
-        settings_view_class,
     );
 
     *block_publisher_ptr = Box::into_raw(Box::new(publisher)) as *const c_void;
@@ -256,7 +249,7 @@ pub unsafe extern "C" fn block_publisher_initialize_block(
         .unwrap();
 
     let publisher = (*(publisher as *mut BlockPublisher)).clone();
-    py.allow_threads(move || match publisher.initialize_block(block) {
+    py.allow_threads(move || match publisher.initialize_block(&block) {
         Err(InitializeBlockError::BlockInProgress) => ErrorCode::BlockInProgress,
         Err(InitializeBlockError::MissingPredecessor) => ErrorCode::MissingPredecessor,
         Ok(_) => ErrorCode::Success,
@@ -273,7 +266,7 @@ pub unsafe extern "C" fn block_publisher_finalize_block(
     result_len: *mut usize,
 ) -> ErrorCode {
     check_null!(publisher, consensus);
-    let consensus = slice::from_raw_parts(consensus, consensus_len).to_vec();
+    let consensus = slice::from_raw_parts(consensus, consensus_len);
     match (*(publisher as *mut BlockPublisher)).finalize_block(consensus, force) {
         Err(FinalizeBlockError::BlockNotInitialized) => ErrorCode::BlockNotInitialized,
         Err(FinalizeBlockError::BlockEmpty) => ErrorCode::BlockEmpty,

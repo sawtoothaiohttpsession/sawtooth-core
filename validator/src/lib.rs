@@ -34,6 +34,7 @@ extern crate uluru;
 // exported modules
 pub mod database;
 pub mod execution;
+pub mod gossip;
 pub mod journal;
 mod metrics;
 pub mod proto;
