@@ -373,6 +373,29 @@ class TesttransactionGet(RestApiBaseTest):
             LOGGER.info(response['error']['message'])
         
         self.assert_valid_error(response, INVALID_RESOURCE_ID)
+        
+    def test_api_get_transaction_signer_key(self, setup):
+        """Tests that GET /transactions/{transaction_id} is reachable 
+        """
+        LOGGER.info("Starting test for transaction/{transaction_id}")
+        expected_head = setup['expected_head']
+        expected_id = setup['transaction_ids'][0]
+        address = setup['address']
+        expected_length = 1
+        
+        expected_link = '{}/transactions/{}'.format(address,expected_id)
+                         
+        try:
+            response = get_transactions()
+            for i in range(len(response['data'])):
+                transaction=get_transaction_id(response['data'][i]['header_signature'])
+                assert response['data'][i]['header']['signer_public_key'] == transaction['data']['header']['signer_public_key']
+                assert bool(transaction['data']) == True 
+        except  urllib.error.HTTPError as error:
+            LOGGER.info("Rest Api not reachable")
+            response = json.loads(error.fp.read().decode('utf-8'))
+            LOGGER.info(response['error']['title'])
+            LOGGER.info(response['error']['message']) 
 
                  
          
