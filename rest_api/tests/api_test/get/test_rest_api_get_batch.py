@@ -591,7 +591,7 @@ class TestBatchStatusesList(RestApiBaseTest):
             LOGGER.info(data['error']['message'])
                                               
         self.assert_status(response,status)
-        self.assert_valid_link(response, expected_link
+        self.assert_valid_link(response, expected_link)
 
 
     def test_api_get_batch_statuses_default_wait(self,setup):
