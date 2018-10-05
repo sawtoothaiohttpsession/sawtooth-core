@@ -52,6 +52,7 @@ HEAD_LENGTH = 128
 class TestStateList(RestApiBaseTest):
     """This class tests the state list with different parameters
     """
+    '''
     def test_api_get_state_list(self, setup):
         """Tests the state list by submitting intkey batches
         """
@@ -68,7 +69,7 @@ class TestStateList(RestApiBaseTest):
         state_list = response['data'][:-1]  
                       
         self.assert_valid_head(response , expected_head)
-                              
+    '''                        
     def test_api_get_state_list_invalid_batch(self, invalid_batch):
         """Tests that transactions are submitted and committed for
         each block that are created by submitting invalid intkey batches
