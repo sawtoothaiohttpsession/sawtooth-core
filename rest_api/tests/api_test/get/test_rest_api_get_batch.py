@@ -577,20 +577,22 @@ class TestBatchStatusesList(RestApiBaseTest):
     def test_api_get_batch_statuses_unknown(self, setup):
         address = setup['address']
         expected_batches = setup['expected_batches']
-        unknown_batch = expected_batches[0]
+        batch = expected_batches[0]
+        unknown_batch = batch[:1] + "b" + batch[1+1:]
         status = "UNKNOWN"
 
         expected_link = '{}/batch_statuses?id={}'.format(address, unknown_batch)
-
-        try:
+                                         
+        try:   
             response = get_batch_statuses([unknown_batch])
         except urllib.error.HTTPError as error:
             data = json.loads(error.fp.read().decode('utf-8'))
             LOGGER.info(data['error']['title'])
             LOGGER.info(data['error']['message'])
-
+                                              
         self.assert_status(response,status)
-        self.assert_valid_link(response, expected_link)
+        self.assert_valid_link(response, expected_link
+
 
     def test_api_get_batch_statuses_default_wait(self,setup):
         signer_key = setup['signer_key']
