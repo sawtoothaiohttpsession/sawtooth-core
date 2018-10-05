@@ -226,7 +226,7 @@ class TestPost(RestApiBaseTest):
                 LOGGER.info(error['error']['message'])
                 assert (json.loads(errdata)['error']['code']) == 42
                 assert e.code == 400
-
+    '''
     def test_rest_api_post_same_txns(self, setup):
         """Tests the rest-api by submitting multiple transactions with same key
         """
@@ -280,7 +280,7 @@ class TestPost(RestApiBaseTest):
                 LOGGER.info(error['error']['message'])
                 assert (json.loads(errdata)['error']['code']) == 42
                 assert e.code == 400
-                    
+                 
     def test_rest_api_multiple_txns_batches(self, setup):
         """Tests rest-api state by submitting multiple
             transactions in multiple batches
@@ -337,7 +337,7 @@ class TestPost(RestApiBaseTest):
                 assert e.code == 400
         final_state_length = len(get_state_list())
         assert initial_state_length == final_state_length
-        
+    '''    
     def test_api_post_batch_different_signer(self, setup):
         signer_trans = get_signer() 
         intkey=create_intkey_transaction("set",[],50,signer_trans)
