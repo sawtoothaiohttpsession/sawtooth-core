@@ -47,7 +47,7 @@ XO_PREFIX = '5b7349'
   
   
 pytestmark = pytest.mark.scenario
-               
+'''           
 class TestScenario(RestApiBaseTest):  
     def test_rest_api_mul_val_intk_xo(self):
         """Tests that transactions are submitted and committed for
@@ -128,3 +128,4 @@ class TestScenario(RestApiBaseTest):
             
         chains = _get_node_chain(node_list)
         check_for_consensus(chains , BLOCK_TO_CHECK_CONSENSUS)
+'''
