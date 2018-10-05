@@ -314,7 +314,7 @@ class TestBatchList(RestApiBaseTest):
             LOGGER.info(data['error']['message'])
 
         self.assert_valid_error(data, INVALID_COUNT_QUERY)
-
+    '''
     def test_api_get_batch_list_reversed(self, setup):
         """verifies that GET /batches is unreachable with bad head parameter
         """
@@ -350,7 +350,7 @@ class TestBatchList(RestApiBaseTest):
         self.assert_valid_head(response, expected_head)
         self.assert_valid_link(response, expected_link)
         self.assert_valid_paging(response)
-
+    '''
     def test_api_get_batch_key_params(self, setup):
         """Tests/ validate the block key parameters with data, head, link and paging
         """
