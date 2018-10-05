@@ -55,6 +55,7 @@ WAIT = 10
 class TestBatchList(RestApiBaseTest):
     """This class tests the batch list with different parameters
     """
+    '''
     def test_api_get_batch_list(self, setup):
         """Tests the batch list by submitting intkey batches
         """
@@ -89,7 +90,7 @@ class TestBatchList(RestApiBaseTest):
                                     signer_key)
         self.assert_valid_link(response, expected_link)
         self.assert_valid_paging(response, expected_link)
-
+    '''
     def test_api_get_batch_list_head(self, setup):
         """Tests that GET /batches is reachable with head parameter
         """
