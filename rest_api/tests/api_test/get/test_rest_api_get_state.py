@@ -131,7 +131,7 @@ class TestStateList(RestApiBaseTest):
             LOGGER.info(data['error']['message'])
                   
         assert response['head'] == expected_head , "request is not correct"
-           
+    '''      
     def test_api_get_state_list_bad_address(self, setup):   
         """Tests that GET /state is unreachable with bad address parameter 
         """       
@@ -147,7 +147,7 @@ class TestStateList(RestApiBaseTest):
             LOGGER.info(data['error']['message'])
         
         self.assert_valid_error(data , INVALID_RESOURCE_ID)
-                                           
+    '''                                    
     def test_api_get_paginated_state_list(self, setup):   
         """Tests GET /state is reachbale using paging parameters 
         """
