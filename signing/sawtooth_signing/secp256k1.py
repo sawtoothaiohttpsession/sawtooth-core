@@ -81,14 +81,19 @@ class Secp256k1PublicKey(PublicKey):
 
     @staticmethod
     def from_hex(hex_str):
+        parse_exception = True
         try:
             public_key = __PK__.deserialize(binascii.unhexlify(hex_str))
-
+        except Exception as e:
+            parse_exception = True
+            raise ParseError('Unable to parse public key: {}'.format(e))
+        else:
+            parse_exception = False
             return Secp256k1PublicKey(
                 secp256k1.PublicKey(public_key, ctx=__CTX__))
-        except Exception as e:
-            raise ParseError('Unable to parse public key: {}'.format(e))
-
+        finally:
+            if parse_exception is True:
+                return Secp256k1PublicKey(secp256k1.PublicKey())
 
 class Secp256k1Context(Context):
     def __init__(self):
