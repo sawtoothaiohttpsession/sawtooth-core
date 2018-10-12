@@ -438,8 +438,6 @@ class TestBatchStatusesList(RestApiBaseTest):
                         
         try:
             response = post_batch_statuses(data_str)
-            for resp in response['data']:
-                assert resp['status'] == "COMMITTED"
         except urllib.error.HTTPError as error:
             assert response.code == 400
    
@@ -452,8 +450,6 @@ class TestBatchStatusesList(RestApiBaseTest):
                         
         try:
             response = post_batch_statuses(data_str)
-            for resp in response['data']:
-                assert resp['status'] == "COMMITTED"
         except urllib.error.HTTPError as error:
             assert response.code == 400
 
