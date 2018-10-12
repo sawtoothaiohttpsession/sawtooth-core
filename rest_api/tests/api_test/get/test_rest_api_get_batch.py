@@ -433,7 +433,6 @@ class TestBatchStatusesList(RestApiBaseTest):
         """verifies that POST /batches_statuses with more than 15 ids
         """
         LOGGER.info("Starting test for batch with bad head parameter")
-        data = {}
         batch_ids = setup_batch_statuses_15['batch_ids']
         data_str=json.dumps(batch_ids).encode()
                         
@@ -449,12 +448,12 @@ class TestBatchStatusesList(RestApiBaseTest):
         """
         LOGGER.info("Starting test for post batch statuses with less than 15 ids")
         batch_ids = setup_batch_statuses_10['batch_ids']
-            
         data_str=json.dumps(batch_ids).encode()
                         
         try:
             response = post_batch_statuses(data_str)
-            assert response['data'][0]['status'] == "COMMITTED"
+            for resp in response['data']:
+                assert resp['status'] == "COMMITTED"
         except urllib.error.HTTPError as error:
             assert response.code == 400
 
