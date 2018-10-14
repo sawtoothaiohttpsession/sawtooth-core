@@ -20,8 +20,7 @@ import urllib.request
 import urllib.error
 
 
-from fixtures import break_genesis, invalid_batch, setup_batch_statuses_10,\
-                     setup_batch_statuses_15
+from fixtures import break_genesis, invalid_batch
 from utils import get_batches, get_batch_id, post_batch,\
                   get_batch_statuses, post_batch_statuses,\
                   _create_expected_link, _get_batch_list
@@ -429,11 +428,11 @@ class TestBatchGet(RestApiBaseTest):
 class TestBatchStatusesList(RestApiBaseTest):
     """This class tests the batch status list with different parameters
     """
-    def test_api_post_batch_status_15ids(self, setup_batch_statuses_15):   
+    def test_api_post_batch_status_15ids(self, setup):   
         """verifies that POST /batches_statuses with more than 15 ids
         """
         LOGGER.info("Starting test for batch with bad head parameter")
-        batch_ids = setup_batch_statuses_15['batch_ids']
+        batch_ids = setup['batch_ids']
         data_str=json.dumps(batch_ids).encode()
                         
         try:
@@ -441,11 +440,11 @@ class TestBatchStatusesList(RestApiBaseTest):
         except urllib.error.HTTPError as error:
             assert response.code == 400
    
-    def test_api_post_batch_status_10ids(self, setup_batch_statuses_10):   
+    def test_api_post_batch_status_10ids(self, setup):   
         """verifies that POST /batches_status with less than 15 ids
         """
         LOGGER.info("Starting test for post batch statuses with less than 15 ids")
-        batch_ids = setup_batch_statuses_10['batch_ids']
+        batch_ids = setup['batch_ids']
         data_str=json.dumps(batch_ids).encode()
                         
         try:
