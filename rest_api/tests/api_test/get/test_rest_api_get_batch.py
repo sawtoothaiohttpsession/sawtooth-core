@@ -19,6 +19,7 @@ import json
 import urllib.request
 import urllib.error
 import aiohttp
+import asyncio
 
  
 from fixtures import break_genesis, invalid_batch
@@ -53,6 +54,10 @@ STATUS_BODY_INVALID = 43
 STATUS_WRONG_CONTENT_TYPE = 46
 WAIT = 10
 
+async def fetch(url, session,params=None):
+    async with session.get(url) as response:
+        return await response.json()
+
 
 class TestBatchList(RestApiBaseTest):
     """This class tests the batch list with different parameters
@@ -69,7 +74,9 @@ class TestBatchList(RestApiBaseTest):
         payload = setup['payload']
         start = setup['start']
         limit = setup['limit']
-        address = setup['address']        
+        address = setup['address'] 
+        url='{}/batches'.format(address)  
+        tasks=[] 
             
         expected_link = '{}/batches?head={}&start={}&limit={}'.format(address,\
                          expected_head, start, limit)
@@ -78,22 +85,24 @@ class TestBatchList(RestApiBaseTest):
                          expected_head, start)
                                          
         try:
-            async with aiohttp.ClientSession() as session:        
-                async with session.get(url='http://10.223.155.43:8008/batches', raise_for_status=True) as data:
-                    response = await data.json()
+            async with aiohttp.ClientSession() as session: 
+                task = asyncio.ensure_future(fetch(url, session))
+                tasks.append(task)   
+                response = await asyncio.gather(*tasks)
         except aiohttp.client_exceptions.ClientResponseError as error:
             LOGGER.info("Rest Api is Unreachable")
+        
               
-        batches = _get_batch_list(response) 
+        batches = _get_batch_list(response[0]) 
          
-        self.assert_valid_data(response)
-        self.assert_valid_head(response, expected_head) 
+        self.assert_valid_data(response[0])
+        self.assert_valid_head(response[0], expected_head) 
         self.assert_valid_data_length(batches, expected_length)
         self.assert_check_batch_seq(batches, expected_batches, 
                                     expected_txns, payload, 
                                     signer_key)
-        self.assert_valid_link(response, expected_link)
-        self.assert_valid_paging(response, expected_link)
+        self.assert_valid_link(response[0], expected_link)
+        self.assert_valid_paging(response[0], expected_link)
             
     async def test_api_get_batch_list_head(self, setup):   
         """Tests that GET /batches is reachable with head parameter 
@@ -116,7 +125,7 @@ class TestBatchList(RestApiBaseTest):
                     
         try:
             async with aiohttp.ClientSession() as session:        
-                async with session.get(url='http://10.223.155.43:8008/batches', params=params, 
+                async with session.get(url='{}/batches'.format(address), params=params, 
                                        raise_for_status=True) as data:
                     response = await data.json()
         except aiohttp.client_exceptions.ClientResponseError as error:
@@ -137,10 +146,11 @@ class TestBatchList(RestApiBaseTest):
         """       
         LOGGER.info("Starting test for batch with bad head parameter")
         params={'head': BAD_HEAD}
+        address = setup['address']
                           
         try:
             async with aiohttp.ClientSession() as session:        
-                async with session.get(url='http://10.223.155.43:8008/batches', params=params) as data:
+                async with session.get(url='{}/batches'.format(address), params=params) as data:
                     response = await data.json()
         except aiohttp.client_exceptions.ClientResponseError as error:
             LOGGER.info(error)
@@ -171,7 +181,7 @@ class TestBatchList(RestApiBaseTest):
                     
         try:
             async with aiohttp.ClientSession() as session:        
-                async with session.get(url='http://10.223.155.43:8008/batches', params=params, 
+                async with session.get(url='{}/batches'.format(address), params=params, 
                                        raise_for_status=True) as data:
                     response = await data.json()
         except aiohttp.client_exceptions.ClientResponseError as error:
@@ -191,12 +201,12 @@ class TestBatchList(RestApiBaseTest):
         """Tests that GET /batches is unreachable with bad id parameter 
         """
         LOGGER.info("Starting test for batch with bad id parameter")
-                         
+        address = setup['address']
         params={'head': BAD_ID}
                           
         try:
             async with aiohttp.ClientSession() as session:        
-                async with session.get(url='http://10.223.155.43:8008/batches', params=params) as data:
+                async with session.get(url='{}/batches'.format(address), params=params) as data:
                     response = await data.json()
         except aiohttp.client_exceptions.ClientResponseError as error:
             LOGGER.info(error)
@@ -227,7 +237,7 @@ class TestBatchList(RestApiBaseTest):
                     
         try:
             async with aiohttp.ClientSession() as session:        
-                async with session.get(url='http://10.223.155.43:8008/batches', params=params, 
+                async with session.get(url='{}/batches'.format(address), params=params, 
                                        raise_for_status=True) as data:
                     response = await data.json()
         except aiohttp.client_exceptions.ClientResponseError as error:
@@ -248,6 +258,7 @@ class TestBatchList(RestApiBaseTest):
         """
         LOGGER.info("Starting test for batch with paging parameters")
         batch_ids   =  setup['batch_ids']
+        address = setup['address']
         expected_head = setup['expected_head']
         expected_id = batch_ids[0]
  
@@ -255,7 +266,7 @@ class TestBatchList(RestApiBaseTest):
                           
         try:
             async with aiohttp.ClientSession() as session:        
-                async with session.get(url='http://10.223.155.43:8008/batches', params=params) as data:
+                async with session.get(url='{}/batches'.format(address), params=params) as data:
                     response = await data.json()
         except aiohttp.client_exceptions.ClientResponseError as error:
             LOGGER.info(error)
@@ -283,7 +294,7 @@ class TestBatchList(RestApiBaseTest):
                       
         try:
             async with aiohttp.ClientSession() as session:        
-                async with session.get(url='http://10.223.155.43:8008/batches', params=params, 
+                async with session.get(url='{}/batches'.format(address), params=params, 
                                        raise_for_status=True) as data:
                     response = await data.json()
         except aiohttp.client_exceptions.ClientResponseError as error:
@@ -305,13 +316,14 @@ class TestBatchList(RestApiBaseTest):
         """
         LOGGER.info("Starting test for batch with invalid start parameter")
         batch_ids   =  setup['batch_ids']
+        address = setup['address']
         expected_head = setup['expected_head']
         expected_id = batch_ids[0]
         params={'start':-1}
                           
         try:
             async with aiohttp.ClientSession() as session:        
-                async with session.get(url='http://10.223.155.43:8008/batches', params=params) as data:
+                async with session.get(url='{}/batches'.format(address), params=params) as data:
                     response = await data.json()
         except aiohttp.client_exceptions.ClientResponseError as error:
             LOGGER.info(error)
@@ -324,13 +336,14 @@ class TestBatchList(RestApiBaseTest):
         """
         LOGGER.info("Starting test for batch with bad limit parameter")
         batch_ids = setup['batch_ids']
+        address = setup['address']
         expected_head = setup['expected_head']
         expected_id = batch_ids[0]
         params={'limit':0}
                           
         try:
             async with aiohttp.ClientSession() as session:        
-                async with session.get(url='http://10.223.155.43:8008/batches', params=params) as data:
+                async with session.get(url='{}/batches'.format(address), params=params) as data:
                     response = await data.json()
         except aiohttp.client_exceptions.ClientResponseError as error:
             LOGGER.info(error)
@@ -346,8 +359,10 @@ class TestBatchList(RestApiBaseTest):
         expected_batches = setup['expected_batches']
         expected_txns = setup['expected_txns']
         expected_length = setup['expected_batch_length']
-        payload = setup['payload']                       
+        payload = setup['payload']                    
         start = setup['batch_ids'][::-1][0]
+        print(setup['batch_ids'])
+        print(start)
         limit = setup['limit']
         address = setup['address']
              
@@ -355,15 +370,16 @@ class TestBatchList(RestApiBaseTest):
                          expected_head, start, limit)
          
         params = 'reverse'
-                           
+                                           
         try:
-            async with aiohttp.ClientSession() as session:        
-                async with session.get(url='http://10.223.155.43:8008/batches', params=params, 
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url='{}/batches'.format(address), params=params, 
                                        raise_for_status=True) as data:
                     response = await data.json()
         except aiohttp.client_exceptions.ClientResponseError as error:
             LOGGER.info("Rest Api is Unreachable")
-          
+                               
+        
         batches = response['data'][::-1][:-1]
         
 
@@ -374,13 +390,15 @@ class TestBatchList(RestApiBaseTest):
         self.assert_valid_head(response, expected_head)
         self.assert_valid_link(response, expected_link)
         self.assert_valid_paging(response, expected_link)
-    
+                  
+  
     async def test_api_get_batch_key_params(self, setup):
         """Tests/ validate the block key parameters with data, head, link and paging               
         """
+        address = setup['address']
         try:
             async with aiohttp.ClientSession() as session:        
-                async with session.get(url='http://10.223.155.43:8008/batches', raise_for_status=True) as data:
+                async with session.get(url='{}/batches'.format(address), raise_for_status=True) as data:
                     response = await data.json()
         except aiohttp.client_exceptions.ClientResponseError as error:
             LOGGER.info("Rest Api is Unreachable")
@@ -393,9 +411,10 @@ class TestBatchList(RestApiBaseTest):
     async def test_api_get_batch_param_link_val(self, setup):
         """Tests/ validate the batch parameters with batches, head, start and limit
         """
+        address = setup['address']
         try:
             async with aiohttp.ClientSession() as session:        
-                async with session.get(url='http://10.223.155.43:8008/batches', raise_for_status=True) as data:
+                async with session.get(url='{}/batches'.format(address), raise_for_status=True) as data:
                     response = await data.json()
             
             for link in response:
@@ -412,10 +431,11 @@ class TestBatchList(RestApiBaseTest):
     async def test_rest_api_check_batches_count(self, setup):
         """Tests batches count from batch list 
         """
+        address = setup['address']
         count =0
         try:
             async with aiohttp.ClientSession() as session:        
-                async with session.get(url='http://10.223.155.43:8008/batches', raise_for_status=True) as data:
+                async with session.get(url='{}/batches'.format(address), raise_for_status=True) as data:
                     response = await data.json()
 
             for batch in enumerate(response['data']):
@@ -439,7 +459,7 @@ class TestBatchGet(RestApiBaseTest):
                                                              
         try:
             async with aiohttp.ClientSession() as session:        
-                async with session.get(url='http://10.223.155.43:8008/batches/{}'.format(expected_id), 
+                async with session.get(url='{}/batches/{}'.format(address,expected_id), 
                                        raise_for_status=True) as data:
                     response = await data.json()
         except aiohttp.client_exceptions.ClientResponseError as error:
@@ -455,10 +475,11 @@ class TestBatchGet(RestApiBaseTest):
     async def test_api_get_bad_batch_id(self, setup):
         """verifies that GET /batches/{bad_batch_id} 
            is unreachable with bad head parameter 
-        """                          
+        """  
+        address = setup['address']                        
         try:
             async with aiohttp.ClientSession() as session:        
-                async with session.get(url='http://10.223.155.43:8008/batches/{}'.format(BAD_ID)) as data:
+                async with session.get(url='{}/batches/{}'.format(address,BAD_ID)) as data:
                     response = await data.json()
         except aiohttp.client_exceptions.ClientResponseError as error:
             LOGGER.info(error)
@@ -473,12 +494,13 @@ class TestBatchStatusesList(RestApiBaseTest):
         """
         LOGGER.info("Starting test for batch with bad head parameter")
         batch_ids = setup['batch_ids']
+        address = setup['address']
         data_str=json.dumps(batch_ids).encode()
         headers = {'content-type': 'application/json'}
         
         try:
             async with aiohttp.ClientSession() as session:        
-                async with session.post(url='http://10.223.155.43:8008/batch_statuses',
+                async with session.post(url='{}/batch_statuses'.format(address),
                                         data=data_str,headers=headers) as data:
                     response = await data.json()
         except aiohttp.client_exceptions.ClientResponseError as error:
@@ -490,12 +512,13 @@ class TestBatchStatusesList(RestApiBaseTest):
         """
         LOGGER.info("Starting test for post batch statuses with less than 15 ids")
         batch_ids = setup['batch_ids']
+        address = setup['address']
         data_str=json.dumps(batch_ids).encode()
         headers = {'content-type': 'application/json'}
                         
         try:
             async with aiohttp.ClientSession() as session:        
-                async with session.post(url='http://10.223.155.43:8008/batch_statuses',
+                async with session.post(url='{}/batch_statuses'.format(address),
                                         data=data_str,headers=headers) as data:
                     response = await data.json()
         except aiohttp.client_exceptions.ClientResponseError as error:
@@ -504,16 +527,16 @@ class TestBatchStatusesList(RestApiBaseTest):
 
     async def test_api_get_batch_statuses(self,setup):
         signer_key = setup['signer_key']
+        address = setup['address']
         expected_head = setup['expected_head']
         expected_batches = setup['expected_batches']
-        address = setup['address']
         status = "COMMITTED"
         expected_link = '{}/batch_statuses?id={}'.format(address, expected_batches[0])
         params = {'id': expected_batches[0]}
         
         try:
             async with aiohttp.ClientSession() as session:        
-                async with session.get(url='http://10.223.155.43:8008/batch_statuses',
+                async with session.get(url='{}/batch_statuses'.format(address),
                                         params=params) as data:
                     response = await data.json()
         except aiohttp.client_exceptions.ClientResponseError as error:
@@ -535,7 +558,7 @@ class TestBatchStatusesList(RestApiBaseTest):
         
         try:
             async with aiohttp.ClientSession() as session:        
-                async with session.get(url='http://10.223.155.43:8008/batch_statuses',
+                async with session.get(url='{}/batch_statuses'.format(address),
                                         params=params) as data:
                     response = await data.json()
         except aiohttp.client_exceptions.ClientResponseError as error:
@@ -553,7 +576,7 @@ class TestBatchStatusesList(RestApiBaseTest):
                                          
         try:
             async with aiohttp.ClientSession() as session:        
-                async with session.get(url='http://10.223.155.43:8008/batch_statuses',
+                async with session.get(url='{}/batch_statuses'.format(address),
                                         params=params) as data:
                     response = await data.json()
         except aiohttp.client_exceptions.ClientResponseError as error:
@@ -569,12 +592,11 @@ class TestBatchStatusesList(RestApiBaseTest):
         
         try:
             async with aiohttp.ClientSession() as session:        
-                async with session.get(url='http://10.223.155.43:8008/batch_statuses') as data:
+                async with session.get(url='{}/batch_statuses'.format(address)) as data:
                     response = await data.json()
         except aiohttp.client_exceptions.ClientResponseError as error:
             LOGGER.info(error)
-                                         
-                                      
+                                                              
         self.assert_valid_error(response, STATUS_ID_QUERY_INVALID)
         
     async def test_api_get_batch_statuses_wait(self,setup):
@@ -590,7 +612,7 @@ class TestBatchStatusesList(RestApiBaseTest):
                                          
         try:
             async with aiohttp.ClientSession() as session:        
-                async with session.get(url='http://10.223.155.43:8008/batch_statuses',
+                async with session.get(url='{}/batch_statuses'.format(address),
                                         params=params) as data:
                     response = await data.json()
         except aiohttp.client_exceptions.ClientResponseError as error:
@@ -610,7 +632,7 @@ class TestBatchStatusesList(RestApiBaseTest):
         
         try:
             async with aiohttp.ClientSession() as session:        
-                async with session.get(url='http://10.223.155.43:8008/batch_statuses',
+                async with session.get(url='{}/batch_statuses'.format(address),
                                         params=params) as data:
                     response = await data.json()
         except aiohttp.client_exceptions.ClientResponseError as error:
@@ -632,7 +654,7 @@ class TestBatchStatusesList(RestApiBaseTest):
                                          
         try:
             async with aiohttp.ClientSession() as session:        
-                async with session.get(url='http://10.223.155.43:8008/batch_statuses',
+                async with session.get(url='{}/batch_statuses'.format(address),
                                         params=params) as data:
                     response = await data.json()
         except aiohttp.client_exceptions.ClientResponseError as error:
@@ -652,7 +674,7 @@ class TestBatchStatusesList(RestApiBaseTest):
                                          
         try:
             async with aiohttp.ClientSession() as session:        
-                async with session.get(url='http://10.223.155.43:8008/batch_statuses',
+                async with session.get(url='{}/batch_statuses'.format(address),
                                         params=params) as data:
                     response = await data.json()
         except aiohttp.client_exceptions.ClientResponseError as error:
