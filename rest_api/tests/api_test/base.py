@@ -88,7 +88,6 @@ class RestApiBaseTest(object):
         """Asserts whether the response has trace parameter
         """
         assert 'trace' in response
-#         assert bool(response['trace'])
         assert response['trace'] == TRACE
     
     def assert_check_consensus(self, response):
