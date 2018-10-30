@@ -13,7 +13,11 @@
 # limitations under the License.
 # ------------------------------------------------------------------------------
 import aiohttp
+import logging
 from base64 import b64decode
+
+from utils import _get_node_list
+
 
 CONSENSUS_ALGO = b'Devmode'
 FAMILY_NAME = 'intkey'
@@ -21,12 +25,17 @@ FAMILY_VERSION = '1.0'
 DEFAULT_LIMIT = 100
 TRACE = False
 NONCE = ''
+TRIES=5
+
+LOGGER = logging.getLogger(__name__)
+LOGGER.setLevel(logging.INFO)
 
 
 class RestApiBaseTest(object):
     """Base class for Rest Api tests that simplifies making assertions
        for the test cases
-    """ 
+    """
+        
     def assert_status(self, response, status):
         for data in response['data']:
             assert data['status'] == status
@@ -88,13 +97,13 @@ class RestApiBaseTest(object):
         """Asserts whether the response has trace parameter
         """
         assert 'trace' in response
+#         assert bool(response['trace'])
         assert response['trace'] == TRACE
     
     def assert_check_consensus(self, response):
         """Asserts response has consensus as parameter
         """
         assert 'consensus' in response
-        assert response['consensus'] == CONSENSUS_ALGO
     
     def assert_state_root_hash(self, response):
         """Asserts the response has state root hash
@@ -130,6 +139,8 @@ class RestApiBaseTest(object):
         """Asserts a response has a link url string with an 
            expected ending
         """
+        print(response['link'])
+        print(expected_link)
         assert 'link' in response
         assert response['link'] == expected_link
         self.assert_valid_url(response['link'], expected_link)
@@ -187,31 +198,42 @@ class RestApiBaseTest(object):
         assert isinstance(data, list)
         self.assert_items(data, dict)
     
-    def assert_valid_data_list(self, response, expected_length):
+    def assert_valid_data_length(self, response, expected_length):
         """Asserts a response has a data list of dicts of an 
            expected length.
         """
+        LOGGER.info(len(response))
+        LOGGER.info(expected_length)
         assert len(response) == expected_length
                         
-    def assert_check_block_seq(self, blocks, expected_batches, expected_txns):
+    def assert_check_block_seq(self, blocks, expected_batches, expected_txns, payload, signer_key):
         """Asserts block is constructed properly after submitting batches
         """
         if not isinstance(blocks, list):
                 blocks = [blocks]
         
-        consensus_algo = CONSENSUS_ALGO
+        if not isinstance(expected_batches, list):
+                expected_batches = [expected_batches]
         
-        ep = list(zip(blocks, expected_batches, expected_txns))
+        if not isinstance(expected_batches, list):
+                expected_batches = [expected_batches]
         
-        for block, expected_batch, expected_txn in ep:
+        if not isinstance(expected_txns, list):
+                expected_txns = [expected_txns]
+        
+        if not isinstance(payload, list):
+                payload = [payload]
+        
+        
+        ep = list(zip(blocks, expected_batches, expected_txns, payload))
+        
+        for block, expected_batch, expected_txn, payload in ep:
             assert isinstance(block, dict)
             assert isinstance(block['header'], dict)
-            assert consensus_algo ==  b64decode(block['header']['consensus'])
             batches = block['batches']
             assert isinstance(batches, list)
             assert len(batches) == 1
-            assert isinstance(batches, dict)
-            self.assert_check_batch_seq(batches, expected_batch, expected_txn)
+            self.assert_check_batch_seq(batches, expected_batch, expected_txn, payload, signer_key)
             
     def assert_check_batch_seq(self, batches, expected_batches, expected_txns, 
                                payload, signer_key):
@@ -226,8 +248,11 @@ class RestApiBaseTest(object):
         
         if not isinstance(expected_txns, list):
                 expected_txns = [expected_txns]
+        
+        if not isinstance(payload, list):
+                payload = [payload]
                    
-        for batch, expected_batch , expected_txn in zip(batches, expected_batches , expected_txns):
+        for batch, expected_batch , expected_txn, payload in zip(batches, expected_batches , expected_txns, payload):
             assert expected_batch == batch['header_signature']
             assert isinstance(batch['header'], dict)
             txns = batch['transactions']
@@ -238,7 +263,7 @@ class RestApiBaseTest(object):
             self.assert_signer_public_key(batch, signer_key)
             self.assert_trace(batch)
             self.assert_check_transaction_seq(txns, expected_txn, 
-                                              payload[0], signer_key)
+                                              payload, signer_key)
             
 
     def assert_check_transaction_seq(self, txns, expected_ids, 
@@ -250,8 +275,12 @@ class RestApiBaseTest(object):
         
         if not isinstance(expected_ids, list):
                 expected_ids = [expected_ids]
+        
+        if not isinstance(payload, list):
+                payload = [payload]
+                
                                 
-        for txn, expected_id in zip(txns, expected_ids):
+        for txn, expected_id, payload in zip(txns, expected_ids, payload):
             assert expected_id == txn['header_signature']
             assert isinstance(txn['header'], dict)
             self.assert_payload(txn, payload)
@@ -262,10 +291,15 @@ class RestApiBaseTest(object):
             self.assert_signer_public_key(txn, signer_key)
             self.assert_batcher_public_key(txn, signer_key)
         
-    def assert_check_state_seq(self, state, expected):
+    def assert_check_state_seq(self, response, expected):
         """Asserts state is updated properly
         """
-        pass
+        self.assertEqual(len(proto_entries), len(json_entries))
+        for pb_leaf, js_leaf in zip(proto_entries, json_entries):
+            self.assertIn('address', js_leaf)
+            self.assertIn('data', js_leaf)
+            self.assertEqual(pb_leaf.address, js_leaf['address'])
+            self.assertEqual(pb_leaf.data, b64decode(js_leaf['data']))
     
     def wait_until_status(url, status_code=200, tries=5):
         """Pause the program until the given url returns the required status.
@@ -303,7 +337,7 @@ class RestApiBaseTest(object):
         raise AssertionError(
             "{} is not available within {} attempts".format(url, tries))
 
-    def wait_for_rest_apis(endpoints, tries=5):
+    def wait_for_rest_apis(endpoints, tries=TRIES):
         """Pause the program until all the given REST API endpoints are available.
     
         Args:
