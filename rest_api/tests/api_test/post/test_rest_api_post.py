@@ -175,7 +175,7 @@ class TestPostList(RestApiBaseTest):
                     message = response['data'][0]['invalid_transactions'][0]['message']
                     LOGGER.info(message)
      
-                for batch in batch_ids:
+                for batch in expected_batch_ids:
                     if batch not in block_batch_ids:
                         LOGGER.info("Block is not created for the respective batch")
                             
