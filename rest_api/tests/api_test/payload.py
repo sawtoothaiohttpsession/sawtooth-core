@@ -661,3 +661,36 @@ def random_word_list(count):
             return [x.strip() for x in fd.readlines()[0:count]]
     else:
         return [random_word() for _ in range(0, count)]
+    
+def create_intkey_transaction_dep(verb, deps, name, value, signer):
+#         words = random_word_list(count) 
+#         self.name=random.choice(words)
+        payload = IntKeyPayload(
+            verb=verb,name=name,value=value)
+ 
+        addr = make_intkey_address(name)
+        data = get_txns_data(addr,deps, payload, signer)
+        return data
+
+def get_txns_data(addr, deps, payload, signer):
+    
+        header = TransactionHeader(
+            signer_public_key=signer.get_public_key().as_hex(),
+            family_name='intkey',
+            family_version='1.0',
+            inputs=[addr],
+            outputs=[addr],
+            dependencies=deps,
+            payload_sha512=payload.sha512(),
+            batcher_public_key=signer.get_public_key().as_hex())
+    
+        header_bytes = header.SerializeToString()
+    
+        signature = signer.sign(header_bytes)
+    
+        transaction = Transaction(
+            header=header_bytes,
+            payload=payload.to_cbor(),
+            header_signature=signature)
+    
+        return transaction
