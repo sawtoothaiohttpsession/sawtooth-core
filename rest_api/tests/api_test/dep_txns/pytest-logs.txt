@@ -1,0 +1,95 @@
+2018-12-03 12:54:05 INFO Starting Setup method for posting batches using intkey as payload
+2018-12-03 12:54:05 INFO Creating intkey transactions with set operations
+2018-12-03 12:54:05 INFO Creating batches for transactions 1trn/batch
+2018-12-03 12:54:05 INFO Gathering expected data before submission of batches
+2018-12-03 12:54:05 INFO Calculating the expected count of batches, transactions, state
+2018-12-03 12:54:05 INFO Calculating the initial count of batches,transactions, state before submission of batches
+2018-12-03 12:54:28 INFO Expected transaction ids
+2018-12-03 12:54:28 INFO Expected batch ids
+2018-12-03 12:54:28 INFO Expected transaction ids
+2018-12-03 12:54:28 INFO Expected batch ids
+2018-12-03 12:54:29 INFO Expected batch ids
+2018-12-03 12:54:31 INFO Starting test for batch post
+2018-12-03 12:54:31 INFO Creating intkey transactions with set operations
+2018-12-03 12:54:31 INFO Creating intkey transactions with inc operations with dependent transactions as first transaction
+2018-12-03 12:54:31 INFO Creating batches for transactions 1trn/batch
+2018-12-03 12:54:31 INFO Submitting batches to the handlers
+2018-12-03 12:54:34 INFO Verifying the responses status
+2018-12-03 12:54:34 INFO Batch with id 1966fa42a905f16c77e0ee9be1de1427c568118a301e917ae3d945ea2ee05ca26485f9854d773123597d222c1ac5a9366bd8a737c24ad8a531383eb1a54d5c0d is successfully got committed
+2018-12-03 12:54:34 INFO Batch with id 950ea7bd67cf674da99d5404f77ed871d6ec5f3d55c2c257d6017f45340ededb25b7f758a12946f044fcd705adcf6f9735668f9353079cd70bd6052bd9868dbc is successfully got committed
+2018-12-03 12:54:34 INFO Verifying the txn details listed under the dependencies
+2018-12-03 12:54:34 INFO Successfully got the dependencies for transaction id 63a943c0f60dc30a52ae4b3047dc33d718c032cff62d9f9fe630436a36adc1ec6bf4f8667ec161974cebb51447761fcf07f4b12caeaac38900361244ffe1b67c
+2018-12-03 12:54:34 INFO The dependencies for transaction id is blank0efffa0d8e69a3c82198674a59b3e758424d43f16d7fa0b06f8b44fd930cfdd70f7aec164a96464c0e3ca96437719598748933d699c48143ef40121877c678bd
+2018-12-03 12:54:35 INFO Checking Consensus on block number 1
+2018-12-03 12:54:35 INFO Starting test for batch post
+2018-12-03 12:54:35 INFO Creating intkey transactions with set operations
+2018-12-03 12:54:35 INFO Creating intkey transactions with inc operations with dependent transactions as first transaction
+2018-12-03 12:54:35 INFO Creating intkey transactions with inc operations with dependent transactions as first and second transaction
+2018-12-03 12:54:35 INFO Creating batches for transactions 1trn/batch
+2018-12-03 12:54:35 INFO Submitting batches to the handlers
+2018-12-03 12:54:41 INFO Verifying the responses status
+2018-12-03 12:54:41 INFO Batch with id b9ebf1fcee5cb0f528a125ecf1dcb111768d11a2d369dd36c0ba95db1d00ed880e14e58e9fca6d89b27eac32c86055ff06268f4f66542d3db2aaba0aba86f4fb is successfully got committed
+2018-12-03 12:54:41 INFO Batch with id 80141ee13cc8dd00bcfbd7b56ff755e8e5d5293349b0acc95046ed6e34b04a1935b44b5de974fda094c3768d9fd018f201047648a428575b1ba62e6c97248a09 is successfully got committed
+2018-12-03 12:54:41 INFO Batch with id efc85981ba5b7258fcd098c6b58fe249b4d601ce9062a0c8a87553d49be1761a6155767950e706ba75af4e84d036ebcdadf369b64f9d87655f75b27c98bff958 is successfully got committed
+2018-12-03 12:54:41 INFO Verifying the txn details listed under the dependencies
+2018-12-03 12:54:41 INFO Successfully got the dependencies for transaction id ffe4cd9297945ce45b5796f27daa669768c76c862d93d4bbe52379ec276249a30c220267a536747ef94793462009cebb28a22b834de82a43043986d40de9de80
+2018-12-03 12:54:41 INFO The dependencies for transaction id is blank89bf5d216e142fe29b67a790b06ea7cbfcaf08064054437305bec0f18ea164003bcb9dd36fbc84a67817690cd7445912763e78da8c1bbc866dd6e0b60237cb80
+2018-12-03 12:54:41 INFO Successfully got the dependencies for transaction id 3a20d74799ad6facd6ffbd63feb816e289d453abaad8563521012f901f093098151cb403c1558b03e8d485e83055402fbcc602deffe091ab80477677a4237f9b
+2018-12-03 12:54:42 INFO Checking Consensus on block number 1
+2018-12-03 12:54:42 INFO Starting test for batch post
+2018-12-03 12:54:42 INFO Creating intkey transactions with set operations
+2018-12-03 12:54:42 INFO Creating intkey transactions with inc operations with dependent transactions as first transaction
+2018-12-03 12:54:42 INFO Creating batches for transactions 1trn/batch
+2018-12-03 12:54:42 INFO Submitting batches to the handlers
+2018-12-03 12:54:42 INFO Verifying the responses status
+2018-12-03 12:54:42 INFO Batch with id 12fd98d7ac23ae15d22336148c76c4684f483551da8cb07d42fbe95aefb8055f2dd6ffe941db3758c76ee0f17cf8f88d98ea04b2da7c904899860a779a443ad2 is successfully got committed
+2018-12-03 12:54:42 INFO Batch with id cf788196417f0342de8b504362c0e8994dbf011675990b1b1d497b9b365684da3a0ba15aa99d38796c3de3276b947d190f0d32feb6859be2362df7cc6cc380f8 is successfully got committed
+2018-12-03 12:54:42 INFO Verifying the txn details listed under the dependencies
+2018-12-03 12:54:42 INFO Successfully got the dependencies for transaction id 3f5411c7c74f985910ff0c3c144cf9bbb921b71ad2e49aa17197440b88fa85742344ce33944a56d33d8861c746b8a23ea9a4bc7a4f67c1078847ea60a0e81a6a
+2018-12-03 12:54:42 INFO The dependencies for transaction id is blankade2fad6cabaa598b5bea4656a172119e6c788cde37eafad2b9c69916e67245b677f143c2d22935935d49f55615a6be467d264b61ac4f14e02da88094b3d582c
+2018-12-03 12:54:43 INFO Checking Consensus on block number 1
+2018-12-03 12:54:43 INFO Starting test for batch post
+2018-12-03 12:54:43 INFO Creating intkey transactions with set operations
+2018-12-03 12:54:43 INFO Creating intkey transactions with inc operations with dependent transactions as first transaction
+2018-12-03 12:54:43 INFO Creating batches for transactions 1trn/batch
+2018-12-03 12:54:43 INFO Submitting batches to the handlers
+2018-12-03 12:54:46 INFO Verifying the responses status
+2018-12-03 12:54:46 INFO Batch with id ec4bb017adbc1327520947ab44f0e31c4b3e8a53acc642946746fc970097b9aa0dcf3f63f90fc94ab7a0cba686a0c07bfb2fb6084a96bfa964bb0f808ff47fd6 is successfully got committed
+2018-12-03 12:54:46 INFO Batch with id ec4bb017adbc1327520947ab44f0e31c4b3e8a53acc642946746fc970097b9aa0dcf3f63f90fc94ab7a0cba686a0c07bfb2fb6084a96bfa964bb0f808ff47fd6 is not committed. Status is INVALID
+2018-12-03 12:54:46 INFO Verifying the txn details listed under the dependencies
+2018-12-03 12:54:47 INFO Checking Consensus on block number 1
+2018-12-03 12:54:47 INFO Starting test for batch post
+2018-12-03 12:54:47 INFO Creating intkey transactions with set operations
+2018-12-03 12:54:47 INFO Creating intkey transactions with inc operations with dependent transactions as first transaction
+2018-12-03 12:54:47 INFO Creating intkey transactions with inc operations with dependent transactions as second transaction
+2018-12-03 12:54:47 INFO Creating batches for transactions 1trn/batch
+2018-12-03 12:54:47 INFO Submitting batches to the handlers
+2018-12-03 12:54:52 INFO Verifying the responses status
+2018-12-03 12:54:52 INFO Batch with id 387e6eba49bcfeb449f5058f1c56455191ed38dea8ef104ad952bb37239044014dfa1fee27eb78d10773cedf833763d72d921b6a098fa273879b6e5b638ec926 is successfully got committed
+2018-12-03 12:54:52 INFO Batch with id 4a716cedbf703e5348ff8355e5fe726851f35f8d07b01b433330c2889717edac146962b520cfd0b286fb4042d057c2374490dba922624a73f7a404da6e5ad177 is successfully got committed
+2018-12-03 12:54:52 INFO Batch with id c85bad47724d9f00f360291fa854034f6d4dbcb8e2ad682a75b20ba3f38a592a75ba6d4dc60708956f334618ce3105fbe4ffea341c98404ab8c3603d81298ea8 is successfully got committed
+2018-12-03 12:54:52 INFO Verifying the txn details listed under the dependencies
+2018-12-03 12:54:52 INFO Successfully got the dependencies for transaction id 699d7d97a2928f33ef1b21184b9d432baa22b506b38521f435d5872092667f784e4d7d637d21d5e9b3bb5d62622fba76876d85417661a54457889f45de8d46f1
+2018-12-03 12:54:52 INFO Successfully got the dependencies for transaction id 19613c531a09892e9ffc29d27347ca06343bc1f7ac6e9faa9db96f4e6ee489b426e9c3c35ca2b4c8da39b97602b963db367f411b5050ccc67010f84b011dd2ca
+2018-12-03 12:54:52 INFO The dependencies for transaction id is blank07b20a8fe18b1a6f95b676de6529f70a7c640b07296e64bb38417d952550a1e060122d602a93794b614c577e2500e7ed0946687f24f0c432ba2ae9b7efc38311
+2018-12-03 12:54:53 INFO Checking Consensus on block number 1
+2018-12-03 12:54:53 INFO Starting test for batch post
+2018-12-03 12:54:53 INFO Creating intkey transactions with set operations
+2018-12-03 12:54:53 INFO Creating intkey transactions with inc operations with dependent transactions as first transaction
+2018-12-03 12:54:53 INFO Creating batches for transactions 1trn/batch
+2018-12-03 12:54:53 INFO Submitting batches to the handlers
+2018-12-03 12:54:55 INFO Verifying the responses status
+2018-12-03 12:54:55 INFO Batch with id 755e812e3b09a8b4cafab088bc93e44bc50f00a1b44905a5a6ee09e75e80e0173948b4cf6ad8efc5ff118427dfe25b8219ba38d5833321d30e0826b6fad519e1 is successfully got committed
+2018-12-03 12:54:55 INFO Batch with id 755e812e3b09a8b4cafab088bc93e44bc50f00a1b44905a5a6ee09e75e80e0173948b4cf6ad8efc5ff118427dfe25b8219ba38d5833321d30e0826b6fad519e1 is successfully got committed
+2018-12-03 12:54:55 INFO Verifying the txn details listed under the dependencies
+2018-12-03 12:54:55 INFO Checking Consensus on block number 1
+2018-12-03 12:54:55 INFO Starting test for batch post
+2018-12-03 12:54:55 INFO Creating intkey transactions with set operations
+2018-12-03 12:54:55 INFO Creating intkey transactions with inc operations with dependent transactions as first transaction
+2018-12-03 12:54:55 INFO Creating batches for transactions 1trn/batch
+2018-12-03 12:54:55 INFO Submitting batches to the handlers
+2018-12-03 12:55:01 INFO Verifying the responses status
+2018-12-03 12:55:01 INFO Batch with id 5f0d9ec090f07be2ebd13bbd8d0086970812a3d0b7863dd0dec3c2708d5eb4e650ebcd55471240453a37bf3c6e87359e2394992d8cc209d97bd087a34ff3fd49 is successfully got committed
+2018-12-03 12:55:01 INFO Batch with id 5f0d9ec090f07be2ebd13bbd8d0086970812a3d0b7863dd0dec3c2708d5eb4e650ebcd55471240453a37bf3c6e87359e2394992d8cc209d97bd087a34ff3fd49 is not committed. Status is UNKNOWN
+2018-12-03 12:55:01 INFO Verifying the txn details listed under the dependencies
+2018-12-03 12:55:01 INFO Checking Consensus on block number 1

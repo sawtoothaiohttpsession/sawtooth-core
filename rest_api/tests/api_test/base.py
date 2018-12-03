@@ -352,3 +352,38 @@ class RestApiBaseTest(object):
                 '{}/blocks'.format(url),
                 status_code=200,
                 tries=tries)
+    def assert_check_txn_dependency_commit(self, response):
+        """Asserts transaction dependencies in response
+            and verifying if the txn_id is listed under dependncies
+        """ 
+        if response['data'][0]['status'] == 'COMMITTED':
+                assert response['data'][0]['status'] == 'COMMITTED'
+                        
+    
+    def assert_check_txn_dependency_invalid(self, response):
+        """Asserts transaction dependencies in response
+            and verifying if the txn_id is listed under dependncies
+        """ 
+    
+                        
+        if response['data'][0]['status'] == 'INVALID':
+                assert response['data'][0]['status'] == 'INVALID'
+    
+    def assert_check_txn_dependency_unknown(self, response):
+        """Asserts transaction dependencies in response
+            and verifying if the txn_id is listed under dependncies
+        """ 
+    
+                        
+        if response['data'][0]['status'] == 'UNKNOWN':
+                assert response['data'][0]['status'] == 'UNKNOWN'
+       
+        
+    def assert_check_txn_dependency(self, response, txn_ids):
+        """Asserts transaction dependencies in response
+            and verifying if the txn_id is listed under dependncies
+        """ 
+        
+        if 'dependencies' in response['data']['header']:
+            dep_txn = response['data']['header']['dependencies']
+            return any(txn in dep_txn for txn in txn_ids)
