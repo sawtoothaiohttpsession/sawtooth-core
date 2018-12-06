@@ -824,7 +824,271 @@ class TestPostTansactionDependencies(RestApiBaseTest):
         node_list = _get_node_list()
         chains = _get_node_chains(node_list)
         assert check_for_consensus(chains , BLOCK_TO_CHECK_CONSENSUS) == True
+        
+    async def test_single_set_dep_reverse(self, setup):
+         """"1. Create first Transaction for set                                                                                                                                                                                                                      
+             2. Create second Transaction for increment with first Transaction as dependecies                           
+             3. Create Batch                                                                                                                                   
+             4. Call POST /batches "
+             Verify the transactions
+         """
+         LOGGER.info('Starting test for batch post')
+      
+         signer = get_signer()
+         expected_trxn_ids  = []
+         expected_batch_ids = []
+         address = _get_client_address()
+         url='{}/batches'.format(address)
+         tasks=[]
+         t = datetime.datetime.now()
+         date = t.strftime('%H%M%S')
+         words = random_word_list(100)
+         name=random.choice(words) 
+         
+         #name=random.choice('123456734558909877') 
+          
+      
+         LOGGER.info("Creating intkey transactions with set operations")
+  
+         txns = [
+             create_intkey_transaction_dep("set", [] , name, 5, signer),]
+         for txn in txns:
+             data = MessageToDict(
+                     txn,
+                     including_default_value_fields=True,
+                     preserving_proto_field_name=True)
+  
+             trxn_id = data['header_signature']
+             expected_trxn_ids.append(trxn_id)
+              
+          
+         LOGGER.info("Creating intkey transactions with inc operations with dependent transactions as first transaction")
+         trxn_ids = expected_trxn_ids
+         words = random_word_list(100)
+         name=random.choice(words) 
+         #name=random.choice('123456734558909877') 
+         txns.append(create_intkey_transaction_dep("set",trxn_ids, name, 2, signer))  
+         for txn in txns:
+             data = MessageToDict(
+                     txn,
+                     including_default_value_fields=True,
+                     preserving_proto_field_name=True)
+             
+             trxn_id = data['header_signature']
+             expected_trxn_ids.append(trxn_id)        
+  
+         LOGGER.info("Creating batches for transactions 1trn/batch")
+       
+         batches = [create_batch([txn], signer) for txn in txns[::-1]]
+       
+         for batch in batches:
+             data = MessageToDict(
+                     batch,
+                     including_default_value_fields=True,
+                     preserving_proto_field_name=True)
+        
+             batch_id = data['header_signature']
+             expected_batch_ids.append(batch_id)
+         
+         post_batch_list = [BatchList(batches=[batch]).SerializeToString() for batch in batches]
+       
+         LOGGER.info("Submitting batches to the handlers")
+        
+         try:
+             async with aiohttp.ClientSession() as session: 
+                 for batch in post_batch_list:
+                     task = asyncio.ensure_future(async_post_batch(url,session,data=batch))
+                     response = await asyncio.gather(task)
+                     #print(response) 
+                 responses = await asyncio.gather(*tasks)
+                     
+         except aiohttp.client_exceptions.ClientResponseError as error:
+             LOGGER.info("Rest Api is Unreachable")
+          
+         LOGGER.info("Verifying the responses status")
+          
+         for response in responses:
+             batch_id = response['data'][0]['id']
+  
+             if response['data'][0]['status'] == 'COMMITTED':
+                 assert response['data'][0]['status'] == 'COMMITTED'
+                  
+                 LOGGER.info('Batch with id {} is successfully got committed'.format(batch_id))
+                          
+             elif response['data'][0]['status'] == 'INVALID':
+                 assert response['data'][0]['status'] == 'INVALID'
+                  
+                 LOGGER.info('Batch with id {} is not committed. Status is INVALID'.format(batch_id))
+   
+             elif response['data'][0]['status'] == 'UNKNOWN':
+                 assert response['data'][0]['status'] == 'UNKNOWN'
+                 LOGGER.info('Batch with id {} is not committed. Status is UNKNOWN'.format(batch_id))
+          
+         LOGGER.info("Verifying the txn details listed under the dependencies")
+         trxn_ids = list(set(expected_trxn_ids))
+         
+         node_list = _get_node_list()
+         chains = _get_node_chains(node_list)
+         assert check_for_consensus(chains , BLOCK_TO_CHECK_CONSENSUS) == True
     
+    async def test_valid_set_invalid_inc_txn_dep(self, setup):
+        """1. Create first Transaction for set                                                                                                                                                                                                                      
+        2. Create second invalid Transaction for increment with first Transaction as dependecies                                                                                                          
+        3. Create Batch                                                                                                                                   
+        4. Call POST /batches
+        Verify the transactions. This shoud be an invalid transaction. The trird txn will be in PENDING state
+        """
+        LOGGER.info('Starting test for batch post')
+        
+        signer = get_signer()
+        expected_trxn_ids  = []
+        expected_batch_ids = []
+        address = _get_client_address()
+        url='{}/batches'.format(address)
+        tasks=[]
+        words = random_word_list(200)
+        name=random.choice(words) 
+        
+        LOGGER.info("Creating intkey transactions with set operations")
+        
+        txns = [
+            create_intkey_transaction_dep("set", [] , name, 50, signer),]
+        for txn in txns:
+            data = MessageToDict(
+                    txn,
+                    including_default_value_fields=True,
+                    preserving_proto_field_name=True)
+   
+            trxn_id = data['header_signature']
+            expected_trxn_ids.append(trxn_id)
+            
+        LOGGER.info("Creating invalid intkey transactions with inc operations with dependent transactions as first transaction")
+        trxn_ids = expected_trxn_ids
+        txns.append(create_intkey_transaction_dep("inc", trxn_ids , name, -1, signer))  
+        for txn in txns:
+            data = MessageToDict(
+                    txn,
+                    including_default_value_fields=True,
+                    preserving_proto_field_name=True)
+                
+            trxn_id = data['header_signature']
+            expected_trxn_ids.append(trxn_id)  
+    
+        LOGGER.info("Creating batches for transactions 1trn/batch")
+         
+        batches = [create_batch([txn], signer) for txn in txns]
+         
+        for batch in batches:
+            data = MessageToDict(
+                    batch,
+                    including_default_value_fields=True,
+                    preserving_proto_field_name=True)
+          
+            batch_id = data['header_signature']
+            expected_batch_ids.append(batch_id)        
+           
+        post_batch_list = [BatchList(batches=[batch]).SerializeToString() for batch in batches]
+         
+        LOGGER.info("Submitting batches to the handlers")
+          
+        try:
+            async with aiohttp.ClientSession() as session: 
+                for batch in post_batch_list:
+                    task = asyncio.ensure_future(async_post_batch(url,session,data=batch))
+                    tasks.append(task)
+                responses = await asyncio.gather(*tasks)
+        except aiohttp.client_exceptions.ClientResponseError as error:
+            LOGGER.info("Rest Api is Unreachable")
+            
+        LOGGER.info("Verifying the responses status")
+
+        assert 'COMMITTED' == responses[0]['data'][0]['status']
+        assert 'INVALID' == responses[1]['data'][0]['status']
+                         
+        node_list = _get_node_list()
+        chains = _get_node_chains(node_list)
+        assert check_for_consensus(chains , BLOCK_TO_CHECK_CONSENSUS) == True
+        
+    async def test_valid_set_invalid_inc_DiffKey_txn_dep(self, setup):
+        """1. Create first Transaction for set                                                                                                                                                                                                                      
+        2. Create second invalid Transaction for increment with first Transaction as dependecies with different key                                                                                                      
+        3. Create Batch                                                                                                                                   
+        4. Call POST /batches
+        Verify the transactions. This shoud be an invalid transaction. The trird txn will be in PENDING state
+        """
+        LOGGER.info('Starting test for batch post')
+        
+        signer = get_signer()
+        expected_trxn_ids  = []
+        expected_batch_ids = []
+        address = _get_client_address()
+        url='{}/batches'.format(address)
+        tasks=[]
+        words = random_word_list(200)
+        name=random.choice(words) 
+        
+        LOGGER.info("Creating intkey transactions with set operations")
+        
+        txns = [
+            create_intkey_transaction_dep("set", [] , name, 50, signer),]
+        for txn in txns:
+            data = MessageToDict(
+                    txn,
+                    including_default_value_fields=True,
+                    preserving_proto_field_name=True)
+   
+            trxn_id = data['header_signature']
+            expected_trxn_ids.append(trxn_id)
+            
+        LOGGER.info("Creating invalid intkey transactions with inc operations with dependent transactions as first transaction")
+        trxn_ids = expected_trxn_ids
+        
+        name = random.choice("abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz")
+        txns.append(create_intkey_transaction_dep("inc", trxn_ids , name, -1, signer))  
+        for txn in txns:
+            data = MessageToDict(
+                    txn,
+                    including_default_value_fields=True,
+                    preserving_proto_field_name=True)
+                
+            trxn_id = data['header_signature']
+            expected_trxn_ids.append(trxn_id)  
+    
+        LOGGER.info("Creating batches for transactions 1trn/batch")
+         
+        batches = [create_batch([txn], signer) for txn in txns]
+         
+        for batch in batches:
+            data = MessageToDict(
+                    batch,
+                    including_default_value_fields=True,
+                    preserving_proto_field_name=True)
+          
+            batch_id = data['header_signature']
+            expected_batch_ids.append(batch_id)
+            
+        
+           
+        post_batch_list = [BatchList(batches=[batch]).SerializeToString() for batch in batches]
+         
+        LOGGER.info("Submitting batches to the handlers")
+          
+        try:
+            async with aiohttp.ClientSession() as session: 
+                for batch in post_batch_list:
+                    task = asyncio.ensure_future(async_post_batch(url,session,data=batch))
+                    tasks.append(task)
+                responses = await asyncio.gather(*tasks)
+        except aiohttp.client_exceptions.ClientResponseError as error:
+            LOGGER.info("Rest Api is Unreachable")
+            
+        LOGGER.info("Verifying the responses status")
+
+        assert 'COMMITTED' == responses[0]['data'][0]['status']
+        assert 'INVALID' == responses[1]['data'][0]['status']
+                         
+        node_list = _get_node_list()
+        chains = _get_node_chains(node_list)
+        assert check_for_consensus(chains , BLOCK_TO_CHECK_CONSENSUS) == True
 
     
-   
