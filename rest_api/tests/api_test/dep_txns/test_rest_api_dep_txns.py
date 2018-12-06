@@ -996,7 +996,6 @@ class TestPostTansactionDependencies(RestApiBaseTest):
                 for batch in post_batch_list:
                     task = asyncio.ensure_future(async_post_batch(url,session,data=batch))
                     tasks.append(task)
-                time.sleep(60)
                 responses = await asyncio.gather(*tasks)
         except aiohttp.client_exceptions.ClientResponseError as error:
             LOGGER.info("Rest Api is Unreachable")
@@ -1079,7 +1078,6 @@ class TestPostTansactionDependencies(RestApiBaseTest):
                 for batch in post_batch_list:
                     task = asyncio.ensure_future(async_post_batch(url,session,data=batch))
                     tasks.append(task)
-                time.sleep(60)
                 responses = await asyncio.gather(*tasks)
         except aiohttp.client_exceptions.ClientResponseError as error:
             LOGGER.info("Rest Api is Unreachable")
