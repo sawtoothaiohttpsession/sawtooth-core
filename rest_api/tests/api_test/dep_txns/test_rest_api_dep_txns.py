@@ -1090,5 +1090,165 @@ class TestPostTansactionDependencies(RestApiBaseTest):
         node_list = _get_node_list()
         chains = _get_node_chains(node_list)
         assert check_for_consensus(chains , BLOCK_TO_CHECK_CONSENSUS) == True
+        
+    async def test_set_Max_txn_dep(self, setup):
+        """1. Create first Transaction for set with max value                                                                                                                                                                                                                   
+        2. Create second Transaction for increment with first Transaction as dependency                                                                                                      
+        3. Create Batch                                                                                                                                   
+        4. Call POST /batches
+        Verify the transactions. The first one shoud be an invalid transaction. The second txn will be with error code 17 and Validator Timed Out
+        """
+        LOGGER.info('Starting test for batch post')
+        
+        signer = get_signer()
+        expected_trxn_ids  = []
+        expected_batch_ids = []
+        address = _get_client_address()
+        url='{}/batches'.format(address)
+        tasks=[]
+        words = random_word_list(200)
+        name=random.choice(words) 
+        
+        LOGGER.info("Creating intkey transactions with set operations")
+        
+        txns = [
+            create_intkey_transaction_dep("set", [] , name, 8888888888888888888888888, signer),]
+        for txn in txns:
+            data = MessageToDict(
+                    txn,
+                    including_default_value_fields=True,
+                    preserving_proto_field_name=True)
+   
+            trxn_id = data['header_signature']
+            expected_trxn_ids.append(trxn_id)
+            
+        LOGGER.info("Creating invalid intkey transactions with inc operations with dependent transactions as first transaction")
+        trxn_ids = expected_trxn_ids
+        txns.append(create_intkey_transaction_dep("inc", trxn_ids , name, 2, signer))  
+        for txn in txns:
+            data = MessageToDict(
+                    txn,
+                    including_default_value_fields=True,
+                    preserving_proto_field_name=True)
+                
+            trxn_id = data['header_signature']
+            expected_trxn_ids.append(trxn_id)  
+    
+        LOGGER.info("Creating batches for transactions 1trn/batch")
+         
+        batches = [create_batch([txn], signer) for txn in txns]
+         
+        for batch in batches:
+            data = MessageToDict(
+                    batch,
+                    including_default_value_fields=True,
+                    preserving_proto_field_name=True)
+          
+            batch_id = data['header_signature']
+            expected_batch_ids.append(batch_id)
+            
+        post_batch_list = [BatchList(batches=[batch]).SerializeToString() for batch in batches]
+         
+        LOGGER.info("Submitting batches to the handlers")
+          
+        try:
+            async with aiohttp.ClientSession() as session: 
+                for batch in post_batch_list:
+                    task = asyncio.ensure_future(async_post_batch(url,session,data=batch))
+                    tasks.append(task)
+                responses = await asyncio.gather(*tasks)
+        except aiohttp.client_exceptions.ClientResponseError as error:
+            LOGGER.info("Rest Api is Unreachable")
+            
+        LOGGER.info("Verifying the responses status")
+
+        assert 'INVALID' == responses[0]['data'][0]['status']
+        assert 'Validator Timed Out' == responses[1]['error']['title']
+        assert 17 == responses[1]['error']['code']
+                         
+        node_list = _get_node_list()
+        chains = _get_node_chains(node_list)
+        assert check_for_consensus(chains , BLOCK_TO_CHECK_CONSENSUS) == True
+        
+    
+    async def test_invalid_set_txn_dep(self, setup):
+        """1. Create first invalid Transaction for set with negative value                                                                                                                                                                                                                   
+        2. Create second Transaction for increment with first invalid Transaction as dependency                                                                                                      
+        3. Create Batch                                                                                                                                   
+        4. Call POST /batches
+        Verify the transactions. The first one shoud be an invalid transaction. The second txn will be with error code 17 and Validator Timed Out
+        """
+        LOGGER.info('Starting test for batch post')
+        
+        signer = get_signer()
+        expected_trxn_ids  = []
+        expected_batch_ids = []
+        address = _get_client_address()
+        url='{}/batches'.format(address)
+        tasks=[]
+        words = random_word_list(200)
+        name=random.choice(words) 
+        
+        LOGGER.info("Creating intkey transactions with set operations")
+        
+        txns = [
+            create_intkey_transaction_dep("set", [] , name, -1, signer),]
+        for txn in txns:
+            data = MessageToDict(
+                    txn,
+                    including_default_value_fields=True,
+                    preserving_proto_field_name=True)
+   
+            trxn_id = data['header_signature']
+            expected_trxn_ids.append(trxn_id)
+            
+        LOGGER.info("Creating invalid intkey transactions with inc operations with dependent transactions as first transaction")
+        trxn_ids = expected_trxn_ids
+        txns.append(create_intkey_transaction_dep("inc", trxn_ids , name, 2, signer))  
+        for txn in txns:
+            data = MessageToDict(
+                    txn,
+                    including_default_value_fields=True,
+                    preserving_proto_field_name=True)
+                
+            trxn_id = data['header_signature']
+            expected_trxn_ids.append(trxn_id)  
+    
+        LOGGER.info("Creating batches for transactions 1trn/batch")
+         
+        batches = [create_batch([txn], signer) for txn in txns]
+         
+        for batch in batches:
+            data = MessageToDict(
+                    batch,
+                    including_default_value_fields=True,
+                    preserving_proto_field_name=True)
+          
+            batch_id = data['header_signature']
+            expected_batch_ids.append(batch_id)
+            
+        post_batch_list = [BatchList(batches=[batch]).SerializeToString() for batch in batches]
+         
+        LOGGER.info("Submitting batches to the handlers")
+          
+        try:
+            async with aiohttp.ClientSession() as session: 
+                for batch in post_batch_list:
+                    task = asyncio.ensure_future(async_post_batch(url,session,data=batch))
+                    tasks.append(task)
+                responses = await asyncio.gather(*tasks)
+        except aiohttp.client_exceptions.ClientResponseError as error:
+            LOGGER.info("Rest Api is Unreachable")
+            
+        LOGGER.info("Verifying the responses status")
+
+        assert 'INVALID' == responses[0]['data'][0]['status']
+        assert 'Validator Timed Out' == responses[1]['error']['title']
+        assert 17 == responses[1]['error']['code']
+                         
+        node_list = _get_node_list()
+        chains = _get_node_chains(node_list)
+        assert check_for_consensus(chains , BLOCK_TO_CHECK_CONSENSUS) == True
+
 
     
