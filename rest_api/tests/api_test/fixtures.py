@@ -238,7 +238,42 @@ def setup_invalid_txns_fn(request):
     data = Txns.get_batch_invalid_txns_fam_name()
     return data
 
+@pytest.fixture(scope="function")
+def post_batch_txn(txns, expected_batch_ids, signer):
+    LOGGER.info("Creating batches for transactions 1trn/batch")
 
+    batches = [create_batch([txn], signer) for txn in txns]
 
+    for batch in batches:
+        data = MessageToDict(
+            batch,
+            including_default_value_fields=True,
+            preserving_proto_field_name=True)
 
+        batch_id = data['header_signature']
+        expected_batch_ids.append(batch_id)
+
+    post_batch_list = [BatchList(batches=[batch]).SerializeToString() for batch in batches]
+
+    LOGGER.info("Submitting batches to the handlers")
+
+    return post_batch_list
+
+@pytest.fixture(scope="function")
+def validate_Response_Status_txn(responses):
+    for response in responses:
+        batch_id = response['data'][0]['id']
+   
+        if response['data'][0]['status'] == 'COMMITTED':
+            assert response['data'][0]['status'] == 'COMMITTED'
+                   
+            LOGGER.info('Batch with id {} is successfully got committed'.format(batch_id))
+                           
+        elif response['data'][0]['status'] == 'INVALID':
+            assert response['data'][0]['status'] == 'INVALID'
+                   
+            LOGGER.info('Batch with id {} is not committed. Status is INVALID'.format(batch_id))
     
+        elif response['data'][0]['status'] == 'UNKNOWN':
+            assert response['data'][0]['status'] == 'UNKNOWN'
+            LOGGER.info('Batch with id {} is not committed. Status is UNKNOWN'.format(batch_id))

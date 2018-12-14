@@ -694,3 +694,16 @@ def get_txns_data(addr, deps, payload, signer):
             header_signature=signature)
     
         return transaction
+def create_invalid_Address_intkey_dep_txn(verb, deps, name, value, signer):
+  
+    payload = IntKeyPayload(
+        verb=verb,name=name,value=1)
+    
+    INVALID_INTKEY_ADDRESS_PREFIX = hashlib.sha512(
+    'invalid'.encode('utf-8')).hexdigest()[0:6]
+
+    addr = INVALID_INTKEY_ADDRESS_PREFIX + hashlib.sha512(
+        name.encode('utf-8')).hexdigest()[-64:]
+
+    data = get_txns_data(addr,deps, payload, signer)
+    return data
