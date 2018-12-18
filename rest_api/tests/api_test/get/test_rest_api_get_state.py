@@ -71,7 +71,7 @@ class TestStateList(RestApiBaseTest):
                 async with session.get(url='{}/state'.format(address), raise_for_status=True) as data:
                     response = await data.json()
         except urllib.error.HTTPError as error:
-            LOGGER.info("Rest Api is Unreachable")
+            LOGGER.info("Rest Api unable to get state list")
             
                   
         state_list = response['data'][::-1]                      
