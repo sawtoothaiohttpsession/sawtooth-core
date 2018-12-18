@@ -112,7 +112,7 @@ class TestStateList(RestApiBaseTest):
                 async with session.get(url='{}/state'.format(address)) as data:
                     response = await data.json()
         except aiohttp.client_exceptions.ClientResponseError as error:
-            LOGGER.info("Rest Api is Unreachable")            
+            LOGGER.info("Rest API state list unable to verify invalid batch")            
      
     async def test_api_get_state_list_bad_head(self, setup):   
         """Tests that GET /state is unreachable with bad head parameter 
