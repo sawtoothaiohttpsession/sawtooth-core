@@ -18,6 +18,7 @@ import logging
 import urllib
 import json
 import os
+import requests
 
 from sawtooth_signing import create_context
 from sawtooth_signing import CryptoFactory
@@ -262,18 +263,25 @@ def post_batch_txn(txns, expected_batch_ids, signer):
 @pytest.fixture(scope="function")
 def validate_Response_Status_txn(responses):
     for response in responses:
-        batch_id = response['data'][0]['id']
-   
-        if response['data'][0]['status'] == 'COMMITTED':
-            assert response['data'][0]['status'] == 'COMMITTED'
-                   
-            LOGGER.info('Batch with id {} is successfully got committed'.format(batch_id))
-                           
-        elif response['data'][0]['status'] == 'INVALID':
-            assert response['data'][0]['status'] == 'INVALID'
-                   
-            LOGGER.info('Batch with id {} is not committed. Status is INVALID'.format(batch_id))
-    
-        elif response['data'][0]['status'] == 'UNKNOWN':
-            assert response['data'][0]['status'] == 'UNKNOWN'
-            LOGGER.info('Batch with id {} is not committed. Status is UNKNOWN'.format(batch_id))
+        
+        req = requests.get(response['link'])
+        response = req.json()
+        if 'error' in response:
+            assert 'Validator Timed Out' == response['error']['title']
+            assert 17 == response['error']['code']
+            LOGGER.info('Batch with id {} is not committed. Status is Validator Timed Out Error'.format(batch_id))
+        else:
+            batch_id = response['data'][0]['id']
+            if response['data'][0]['status'] == 'COMMITTED':
+                assert response['data'][0]['status'] == 'COMMITTED'
+                       
+                LOGGER.info('Batch with id {} is successfully got committed'.format(batch_id))
+                               
+            elif response['data'][0]['status'] == 'INVALID':
+                assert response['data'][0]['status'] == 'INVALID'
+                       
+                LOGGER.info('Batch with id {} is not committed. Status is INVALID'.format(batch_id))
+        
+            elif response['data'][0]['status'] == 'UNKNOWN':
+                assert response['data'][0]['status'] == 'UNKNOWN'
+                LOGGER.info('Batch with id {} is not committed. Status is UNKNOWN'.format(batch_id))
