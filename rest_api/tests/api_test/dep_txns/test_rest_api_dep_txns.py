@@ -1591,7 +1591,7 @@ class TestPostTansactionDependencies(RestApiBaseTest):
             trxn_ids = expected_trxn_ids
             name=random.choice(words)
             
-            txns.append(create_intkey_transaction_dep("set", [trxn_id] , name, 40, signer))  
+            txns.append(create_intkey_transaction_dep("set", [trxn_id] , name, value, signer))  
             for txn in [txns[-1]]:
                 data = MessageToDict(
                         txn,
