@@ -1551,3 +1551,210 @@ class TestPostTansactionDependencies(RestApiBaseTest):
 
         LOGGER.info("Verifying the responses status for first transaction again")
         validate_Response_Status_txn(responses_inc)
+        
+    async def test_Multiple_dep_Txn_Consecutive_dep(self, setup):
+        """1.Create 5 dependent transactions for set and second one is depend on first, third is depend on second, fourth is depend on third and fifth is depend on fourth
+        2. Create a batch and post the fourth and fifth transactions.
+        3. Check the response status. It should not be COMMITTED.
+        4. Create batch and post first, second and third transactions and check the response status. It should be COMMITTED.
+        5. Now check the response for the fourth and fifth transaction. It should be COMMITTED.
+        """
+        LOGGER.info('Starting test for batch post')
+              
+        signer = get_signer()
+        expected_trxn_ids  = []
+        expected_batch_ids_first = []
+        expected_batch_ids_second = []
+        address = _get_client_address()
+        url='{}/batches'.format(address)
+        tasks=[]
+        words = random_word_list(200)
+        name=random.choice(words) 
+              
+        LOGGER.info("Creating intkey transactions with set operations")
+              
+        txns = [
+            create_intkey_transaction_dep("set", [] , name, 50, signer),]
+             
+        for txn in txns:
+            data = MessageToDict(
+                    txn,
+                    including_default_value_fields=True,
+                    preserving_proto_field_name=True)
+         
+            trxn_id = data['header_signature']
+            expected_trxn_ids.append(trxn_id)
+                  
+        LOGGER.info("Creating intkey transactions with set operations with dependent transactions as first transaction")
+        value = 20
+        for i in range(4):
+            trxn_ids = expected_trxn_ids
+            name=random.choice(words)
+            
+            txns.append(create_intkey_transaction_dep("set", [trxn_id] , name, value, signer))  
+            for txn in [txns[-1]]:
+                data = MessageToDict(
+                        txn,
+                        including_default_value_fields=True,
+                        preserving_proto_field_name=True)
+                          
+                trxn_id = data['header_signature']
+                expected_trxn_ids.append(trxn_id)  
+            value += 10
+              
+        responses_last = []
+        icounter = 3
+        for txn in txns[3:5]:
+             
+            post_batch_list = post_batch_txn([txn], expected_batch_ids_first, signer)
+           
+            LOGGER.info("Submitting batches to the handlers")
+                     
+            try:
+                async with aiohttp.ClientSession() as session: 
+                    for batch in post_batch_list:
+                        task = asyncio.ensure_future(async_post_batch(url,session,data=batch))
+                        tasks.append(task)
+                    responses = await asyncio.gather(*tasks)
+                    validate_Response_Status_txn(responses)
+                    responses_last.append(responses)
+            except aiohttp.client_exceptions.ClientResponseError as error:
+                LOGGER.info("Rest Api is Unreachable")
+                  
+            LOGGER.info("Verifying the responses status")
+          
+        responses_first = []
+        post_batch_list = []
+        expected_batch_ids = []
+        icounter = 0
+        for txn in txns[0:3]:
+             
+            post_batch_list = post_batch_txn([txn], expected_batch_ids_second, signer)
+          
+            LOGGER.info("Submitting batches to the handlers")
+                     
+            try:
+                async with aiohttp.ClientSession() as session: 
+                    for batch in post_batch_list:
+                        task = asyncio.ensure_future(async_post_batch(url,session,data=batch))
+                        tasks.append(task)
+                    responses = await asyncio.gather(*tasks)
+                    validate_Response_Status_txn(responses)
+                    responses_first.append(responses)
+            except aiohttp.client_exceptions.ClientResponseError as error:
+                LOGGER.info("Rest Api is Unreachable")
+                  
+            LOGGER.info("Verifying the responses status")
+  
+        for responses in responses_first:
+            validate_Response_Status_txn(responses)
+        for responses in responses_last:
+            validate_Response_Status_txn(responses)
+                 
+        node_list = _get_node_list()
+        chains = _get_node_chains(node_list)
+        assert check_for_consensus(chains , BLOCK_TO_CHECK_CONSENSUS) == True
+        
+    async def test_Multiple_invalid_dep_Txn_Consecutive_dep(self, setup):
+        """1.Create 5 dependent transactions for set and second one is depend on first, third is depend on second, 
+        fourth is depend on third and fifth is depend on fourth. Fourth one will be an invalid txn
+        2. Create a batch and post the fourth and fifth transactions.
+        3. Check the response status. It should not be COMMITTED.
+        4. Create batch and post first, second and third transactions and check the response status. It should be COMMITTED.
+        5. Now check the response for the fourth and fifth transaction. It should be INVALID.
+        """
+        LOGGER.info('Starting test for batch post')
+             
+        signer = get_signer()
+        expected_trxn_ids  = []
+        expected_batch_ids_first = []
+        expected_batch_ids_second = []
+        address = _get_client_address()
+        url='{}/batches'.format(address)
+        tasks=[]
+        words = random_word_list(200)
+        name=random.choice(words) 
+             
+        LOGGER.info("Creating intkey transactions with set operations")
+             
+        txns = [
+            create_intkey_transaction_dep("set", [] , name, 50, signer),]
+            
+        for txn in txns:
+            data = MessageToDict(
+                    txn,
+                    including_default_value_fields=True,
+                    preserving_proto_field_name=True)
+        
+            trxn_id = data['header_signature']
+            expected_trxn_ids.append(trxn_id)
+                 
+        LOGGER.info("Creating intkey transactions with set operations with dependent transactions as first transaction")
+        value = 30
+        invalidValue = -20
+        for i in range(4):
+            trxn_ids = expected_trxn_ids
+            name=random.choice(words)
+            if i == 2:
+                txns.append(create_intkey_transaction_dep("set", [trxn_id] , name, invalidValue, signer)) 
+            else:
+                txns.append(create_intkey_transaction_dep("set", [trxn_id] , name, value, signer))
+                
+            for txn in [txns[-1]]:
+                data = MessageToDict(
+                        txn,
+                        including_default_value_fields=True,
+                        preserving_proto_field_name=True)
+                         
+                trxn_id = data['header_signature']
+                expected_trxn_ids.append(trxn_id)
+
+        responses_last = []
+        icounter = 3
+        for txn in txns[3:5]:
+            
+            post_batch_list = post_batch_txn([txn], expected_batch_ids_first, signer)
+          
+            LOGGER.info("Submitting batches to the handlers")
+                    
+            try:
+                async with aiohttp.ClientSession() as session: 
+                    for batch in post_batch_list:
+                        task = asyncio.ensure_future(async_post_batch(url,session,data=batch))
+                        tasks.append(task)
+                    responses = await asyncio.gather(*tasks)
+                    responses_last.append(responses)
+            except aiohttp.client_exceptions.ClientResponseError as error:
+                LOGGER.info("Rest Api is Unreachable")
+                 
+            LOGGER.info("Verifying the responses status")
+ 
+        responses_first = []
+        post_batch_list = []
+        icounter = 0
+        for txn in txns[0:3]:           
+            post_batch_list = post_batch_txn([txn], expected_batch_ids_second, signer)
+           
+            LOGGER.info("Submitting batches to the handlers")
+                    
+            try:
+                async with aiohttp.ClientSession() as session: 
+                    for batch in post_batch_list:
+                        task = asyncio.ensure_future(async_post_batch(url,session,data=batch))
+                        tasks.append(task)
+                    responses = await asyncio.gather(*tasks)
+                    validate_Response_Status_txn(responses)
+                    responses_first.append(responses)
+            except aiohttp.client_exceptions.ClientResponseError as error:
+                LOGGER.info("Rest Api is Unreachable")
+                 
+        LOGGER.info("Verifying the responses status")
+ 
+        for responses in responses_first:
+            validate_Response_Status_txn(responses)
+        for responses in responses_last:
+            validate_Response_Status_txn(responses)
+                       
+        node_list = _get_node_list()
+        chains = _get_node_chains(node_list)
+        assert check_for_consensus(chains , BLOCK_TO_CHECK_CONSENSUS) == True
