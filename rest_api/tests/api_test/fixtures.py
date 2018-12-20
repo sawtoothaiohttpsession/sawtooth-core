@@ -268,7 +268,7 @@ def validate_Response_Status_txn(responses):
         response = req.json()
         if 'error' in response:
             assert 'Validator Timed Out' == response['error']['title']
-            assert 17 == response['error']['code']
+            assert response['error']['code'] == 17
             LOGGER.info('Batch with id {} is not committed. Status is Validator Timed Out Error'.format(batch_id))
         else:
             batch_id = response['data'][0]['id']

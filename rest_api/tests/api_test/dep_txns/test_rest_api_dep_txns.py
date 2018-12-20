@@ -1586,54 +1586,22 @@ class TestPostTansactionDependencies(RestApiBaseTest):
             expected_trxn_ids.append(trxn_id)
                   
         LOGGER.info("Creating intkey transactions with set operations with dependent transactions as first transaction")
-        trxn_ids = expected_trxn_ids
-        name=random.choice(words)
-        txns.append(create_intkey_transaction_dep("set", [trxn_id] , name, 40, signer))  
-        for txn in txns:
-            data = MessageToDict(
-                    txn,
-                    including_default_value_fields=True,
-                    preserving_proto_field_name=True)
-                      
-            trxn_id = data['header_signature']
-            expected_trxn_ids.append(trxn_id)  
-                 
-        LOGGER.info("Creating intkey transactions with set operations with dependent transactions as first transaction")
-        name=random.choice(words)
-        txns.append(create_intkey_transaction_dep("set", [trxn_id] , name, 30, signer))  
-        for txn in txns:
-            data = MessageToDict(
-                    txn,
-                    including_default_value_fields=True,
-                    preserving_proto_field_name=True)
-                      
-            trxn_id = data['header_signature']
-            expected_trxn_ids.append(trxn_id)  
-             
-        LOGGER.info("Creating intkey transactions with set operations with dependent transactions as first transaction")
-        name=random.choice(words)
-        txns.append(create_intkey_transaction_dep("set", [trxn_id] , name, 80, signer))  
-        for txn in txns:
-            data = MessageToDict(
-                    txn,
-                    including_default_value_fields=True,
-                    preserving_proto_field_name=True)
-                      
-            trxn_id = data['header_signature']
-            expected_trxn_ids.append(trxn_id)  
-             
-        LOGGER.info("Creating intkey transactions with set operations with dependent transactions as first transaction")
-        name=random.choice(words)
-        txns.append(create_intkey_transaction_dep("set", [trxn_id] , name, 40, signer))  
-        for txn in txns:
-            data = MessageToDict(
-                    txn,
-                    including_default_value_fields=True,
-                    preserving_proto_field_name=True)
-                      
-            trxn_id = data['header_signature']
-            expected_trxn_ids.append(trxn_id)  
-  
+        value = 20
+        for i in range(4):
+            trxn_ids = expected_trxn_ids
+            name=random.choice(words)
+            
+            txns.append(create_intkey_transaction_dep("set", [trxn_id] , name, 40, signer))  
+            for txn in [txns[-1]]:
+                data = MessageToDict(
+                        txn,
+                        including_default_value_fields=True,
+                        preserving_proto_field_name=True)
+                          
+                trxn_id = data['header_signature']
+                expected_trxn_ids.append(trxn_id)  
+            value += 10
+              
         responses_last = []
         icounter = 3
         for txn in txns[3:5]:
@@ -1662,7 +1630,7 @@ class TestPostTansactionDependencies(RestApiBaseTest):
         for txn in txns[0:3]:
              
             post_batch_list = post_batch_txn([txn], expected_batch_ids_second, signer)
-         
+          
             LOGGER.info("Submitting batches to the handlers")
                      
             try:
@@ -1686,7 +1654,7 @@ class TestPostTansactionDependencies(RestApiBaseTest):
         node_list = _get_node_list()
         chains = _get_node_chains(node_list)
         assert check_for_consensus(chains , BLOCK_TO_CHECK_CONSENSUS) == True
-       
+        
     async def test_Multiple_invalid_dep_Txn_Consecutive_dep(self, setup):
         """1.Create 5 dependent transactions for set and second one is depend on first, third is depend on second, 
         fourth is depend on third and fifth is depend on fourth. Fourth one will be an invalid txn
@@ -1704,16 +1672,15 @@ class TestPostTansactionDependencies(RestApiBaseTest):
         address = _get_client_address()
         url='{}/batches'.format(address)
         tasks=[]
-        txns_last = []
         words = random_word_list(200)
         name=random.choice(words) 
              
         LOGGER.info("Creating intkey transactions with set operations")
              
-        txns_first = [
+        txns = [
             create_intkey_transaction_dep("set", [] , name, 50, signer),]
             
-        for txn in txns_first:
+        for txn in txns:
             data = MessageToDict(
                     txn,
                     including_default_value_fields=True,
@@ -1723,57 +1690,28 @@ class TestPostTansactionDependencies(RestApiBaseTest):
             expected_trxn_ids.append(trxn_id)
                  
         LOGGER.info("Creating intkey transactions with set operations with dependent transactions as first transaction")
-        trxn_ids = expected_trxn_ids
-        name=random.choice(words)
-        txns_first.append(create_intkey_transaction_dep("set", [trxn_id] , name, 40, signer))  
-        for txn in txns_first:
-            data = MessageToDict(
-                    txn,
-                    including_default_value_fields=True,
-                    preserving_proto_field_name=True)
-                     
-            trxn_id = data['header_signature']
-            expected_trxn_ids.append(trxn_id)  
+        value = 30
+        invalidValue = -20
+        for i in range(4):
+            trxn_ids = expected_trxn_ids
+            name=random.choice(words)
+            if i == 2:
+                txns.append(create_intkey_transaction_dep("set", [trxn_id] , name, invalidValue, signer)) 
+            else:
+                txns.append(create_intkey_transaction_dep("set", [trxn_id] , name, value, signer))
                 
-        LOGGER.info("Creating intkey transactions with set operations with dependent transactions as second transaction")
-        name=random.choice(words)
-        txns_first.append(create_intkey_transaction_dep("set", [trxn_id] , name, 30, signer))  
-        for txn in txns_first:
-            data = MessageToDict(
-                    txn,
-                    including_default_value_fields=True,
-                    preserving_proto_field_name=True)
-                     
-            trxn_id = data['header_signature']
-            expected_trxn_ids.append(trxn_id)  
-            
-        LOGGER.info("Creating invalid intkey transactions with set operations with dependent transactions as third transaction")
-        name=random.choice(words)
-        txns_last.append(create_intkey_transaction_dep("set", [trxn_id] , name, -10, signer))  
-        for txn in txns_last:
-            data = MessageToDict(
-                    txn,
-                    including_default_value_fields=True,
-                    preserving_proto_field_name=True)
-                     
-            trxn_id = data['header_signature']
-            expected_trxn_ids.append(trxn_id)  
-            
-        LOGGER.info("Creating intkey transactions with set operations with dependent transactions as fourth invalid transaction")
-        name=random.choice(words)
-        txns_last.append(create_intkey_transaction_dep("set", [trxn_id] , name, 40, signer))  
-        for txn in txns_last:
-            data = MessageToDict(
-                    txn,
-                    including_default_value_fields=True,
-                    preserving_proto_field_name=True)
-                     
-            trxn_id = data['header_signature']
-            expected_trxn_ids.append(trxn_id)  
- 
+            for txn in [txns[-1]]:
+                data = MessageToDict(
+                        txn,
+                        including_default_value_fields=True,
+                        preserving_proto_field_name=True)
+                         
+                trxn_id = data['header_signature']
+                expected_trxn_ids.append(trxn_id)
+
         responses_last = []
         icounter = 3
-        for txn in txns_last:
+        for txn in txns[3:5]:
             
             post_batch_list = post_batch_txn([txn], expected_batch_ids_first, signer)
           
@@ -1793,9 +1731,8 @@ class TestPostTansactionDependencies(RestApiBaseTest):
  
         responses_first = []
         post_batch_list = []
-        expected_batch_ids = []
         icounter = 0
-        for txn in txns_first:           
+        for txn in txns[0:3]:           
             post_batch_list = post_batch_txn([txn], expected_batch_ids_second, signer)
            
             LOGGER.info("Submitting batches to the handlers")
