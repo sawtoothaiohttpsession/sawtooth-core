@@ -576,3 +576,50 @@ class TestStateGet(RestApiBaseTest):
             LOGGER.info(error)
           
         self.assert_valid_error(response, INVALID_STATE_ADDRESS)
+
+class TestStateDeleteRoot(RestApiBaseTest):
+    async def test_api_get_state_delete_root(self, setup):
+        """Tests/ validate the state of deleted block at root node
+        """
+        address = setup['address']
+        count = 0
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url='{}/state'.format(address),
+                                       raise_for_status=True) as data:
+                    response = await data.json()
+
+            state_list = response['data']
+            for _ in enumerate(state_list):
+                count = count+1
+            if count == 1:
+                LOGGER.info("Currently selected state is root/ genesis node")
+                address = setup['address']
+                if address == "":
+                    LOGGER.info("Merkle tree root state deleted")
+
+        except aiohttp.client_exceptions.ClientResponseError as error:
+            LOGGER.info("State count not able to collect or not root/ genesis node")
+
+    async def test_api_get_state_delete_not_root_node(self, setup):
+        """Tests/ validate the state of deleted block at root node
+        """
+        address = setup['address']
+        count = 0
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url='{}/state'.format(address),
+                                       raise_for_status=True) as data:
+                    response = await data.json()
+
+            state_list = response['data']
+            for _ in enumerate(state_list):
+                count = count+1
+            if count > 1:
+                LOGGER.info("Currently selected state is not root node")
+                address = setup['address']
+                if address == "":
+                    LOGGER.info("Merkle tree not root node state deleted")
+
+        except aiohttp.client_exceptions.ClientResponseError as error:
+            LOGGER.info("State count not able to collect or not root/ genesis node")
