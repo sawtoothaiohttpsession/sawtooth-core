@@ -16,7 +16,7 @@ import abc
 
 class Transaction(metaclass=abc.ABCMeta):
     @abc.abstractmethod
-    def __init__(self, payload_type):
+    def __init__(self):
         return
     
     @abc.abstractmethod    
