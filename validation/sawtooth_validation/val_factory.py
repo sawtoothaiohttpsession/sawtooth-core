@@ -17,7 +17,7 @@ import abc
 class Transaction(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def __init__(self):
-        pass
+        return
     
     @abc.abstractmethod    
     def get_signer(self):
