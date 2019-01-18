@@ -16,7 +16,7 @@ import abc
 
 class Transaction(metaclass=abc.ABCMeta):
     @abc.abstractmethod
-    def __init__(self, payload_type):
+    def __init__(self):
         pass
     
     @abc.abstractmethod    
@@ -29,5 +29,9 @@ class Transaction(metaclass=abc.ABCMeta):
     
     @abc.abstractmethod    
     def _create_txn(self):
+        return
+    
+    @abc.abstractmethod    
+    def create_batch(self):
         return
     
