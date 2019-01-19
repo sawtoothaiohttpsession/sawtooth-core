@@ -134,7 +134,7 @@ class SupplyChainCyclicTxns(Transaction):
         context = create_context('secp256k1')
         private_key = context.new_random_private_key()
         signer = CryptoFactory(context).new_signer(private_key)
-        self.payload=SmallBankMessageFactory(signer=signer)
+        self.payload=SupplyChainMessageFactory(signer=signer)
     
     def get_signer(self):
         context = create_context('secp256k1')
