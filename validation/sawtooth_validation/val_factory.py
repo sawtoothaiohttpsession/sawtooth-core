@@ -35,3 +35,4 @@ class Transaction(metaclass=abc.ABCMeta):
     def create_batch(self):
         return
     
+
