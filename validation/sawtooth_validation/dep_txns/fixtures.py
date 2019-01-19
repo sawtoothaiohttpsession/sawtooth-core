@@ -20,9 +20,11 @@ import json
 
 from google.protobuf.json_format import MessageToDict
 
-from sawtooth_validation.transactions import DependentTxns
-
-               
+from sawtooth_validation.transactions import \
+                         SmallBankDependentTxns, \
+                         SupplyChainDependentTxns
+ 
+    
 LOGGER = logging.getLogger(__name__)
 LOGGER.setLevel(logging.INFO)
 
@@ -31,7 +33,7 @@ def setup_dep_accounts(request):
     """Setup method for posting batches and returning the 
        response
     """
-    dep_txns=DependentTxns()
+    dep_txns=SmallBankDependentTxns()
     txn1=dep_txns._create_account(1,'cust1', 100)
     batch1=dep_txns.create_batch([txn1])
     dict = MessageToDict(
@@ -51,7 +53,7 @@ def setup_deposit_checking(request):
     """Setup method for posting batches and returning the 
        response
     """
-    dep_txns=DependentTxns()
+    dep_txns=SmallBankDependentTxns()
     txn1=dep_txns._create_deposit_checking(1,10000)
     batch1=dep_txns.create_batch([txn1])
     dict = MessageToDict(
@@ -69,7 +71,7 @@ def setup_send_payment(request):
     """Setup method for posting batches and returning the 
        response
     """
-    dep_txns=DependentTxns()
+    dep_txns=SmallBankDependentTxns()
     txn1=dep_txns._create_send_payment(1,2,1)
     batch1=dep_txns.create_batch([txn1])
     dict = MessageToDict(
@@ -88,7 +90,7 @@ def setup_write_check(request):
     """Setup method for posting batches and returning the 
        response
     """
-    dep_txns=DependentTxns()
+    dep_txns=SmallBankDependentTxns()
     txns=dep_txns._create_write_check(1,100)
     return txns
 
@@ -98,7 +100,7 @@ def setup_transact_savings(request):
     """Setup method for posting batches and returning the 
        response
     """
-    dep_txns=DependentTxns()
+    dep_txns=SmallBankDependentTxns()
     txns=dep_txns._create_transact_savings(1,100)
     return txns
 
@@ -108,6 +110,25 @@ def setup_invalid(request):
     """Setup method for posting batches and returning the 
        response
     """
-    dep_txns=DependentTxns()
+    dep_txns=SmallBankDependentTxns()
     txn=dep_txns._create_invalid_txn()
     return txn
+
+@pytest.fixture(scope="function")
+def setup_supply_agent(request):
+    """Setup method for posting batches and returning the 
+       response
+    """
+    dep_txns=SupplyChainDependentTxns()
+    txn1=dep_txns._create_agent('agent1')
+    batch1=dep_txns.create_batch([txn1])
+    dict = MessageToDict(
+            txn1,
+            including_default_value_fields=True,
+            preserving_proto_field_name=True)
+    txn_id=dict['header_signature'] 
+    
+    txn2=dep_txns._create_agent('agent2')
+    batch2=dep_txns.create_batch([txn2])
+    batch_list=[batch1,batch2]
+    return batch_list

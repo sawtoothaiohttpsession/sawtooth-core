@@ -30,9 +30,11 @@ from sawtooth_validation.message_factory.intkey_message_factory\
                         import IntkeyMessageFactory
 
 from sawtooth_validation.val_factory import Transaction
+
+AGENT = 'ae'
                         
                              
-class DependentTxns(Transaction):
+class SmallBankDependentTxns(Transaction):
     def __init__(self):
         signer = self.get_signer()
         self.factory=SmallBankMessageFactory(signer=signer)
@@ -81,9 +83,53 @@ class DependentTxns(Transaction):
         address=[self._calculate_address(cust_id)]
         txn = self.factory.create_payload(address,acc,deps)
         return txn
+    
+
+class SupplyChainDependentTxns(Transaction):
+    def __init__(self):
+        signer = self.get_signer()
+        self.factory=SupplyChainMessageFactory(signer=signer)
+
+    def get_signer(self):
+        signer=self.factory.signer_address
+        return signer
+    
+    def create_batch(self,txns):
+        return self.factory._create_batch(txns)
+    
+    def _create_txn(self,txn):
+        self.factory.create_payload(address,payload)
+        return
+        
+    def _calculate_address(self,agent):
+        NAMESPACE= hashlib.sha512('smallbank'.encode('utf-8')).hexdigest()[0:6] 
+        addr1=NAMESPACE+AGENT
+        return addr1
+    
+    def _create_agent(self,name,deps=None):
+        agent = self.factory.create_agent(name)
+        print(agent)
+        address=[self.get_signer()]
+        print(deps)
+        txn = self.factory.create_payload(address,agent,deps)
+        return txn
 
 
-class CyclicTxns(Transaction):
+class SmallBankCyclicTxns(Transaction):
+    def __init__(self,signer):
+        context = create_context('secp256k1')
+        private_key = context.new_random_private_key()
+        signer = CryptoFactory(context).new_signer(private_key)
+        self.payload=SmallBankMessageFactory(signer=signer)
+    
+    def get_signer(self):
+        context = create_context('secp256k1')
+        private_key = context.new_random_private_key()
+        signer = CryptoFactory(context).new_signer(private_key)
+        return signer
+    
+
+class SupplyChainCyclicTxns(Transaction):
     def __init__(self,signer):
         context = create_context('secp256k1')
         private_key = context.new_random_private_key()
