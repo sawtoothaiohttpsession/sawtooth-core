@@ -31,7 +31,8 @@ class Transaction(metaclass=abc.ABCMeta):
     def _create_txn(self):
         return
     
-    @abc.abstractmethod
+    @abc.abstractmethod    
     def create_batch(self):
         return
     
+

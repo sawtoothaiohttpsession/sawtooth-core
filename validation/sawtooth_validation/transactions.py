@@ -20,6 +20,9 @@ from google.protobuf.json_format import MessageToDict
 from sawtooth_signing import create_context
 from sawtooth_signing import CryptoFactory
 
+from sawtooth_validation.message_factory.supplychain_message_factory\
+                        import SupplyChainMessageFactory
+
 from sawtooth_validation.message_factory.smallbank_message_factory\
                         import SmallBankMessageFactory
 
