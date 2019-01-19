@@ -20,20 +20,8 @@ import time
 
 from sawtooth_processor_test.message_factory import MessageFactory
 
-from sawtooth_sdk.protobuf.payload_pb2 import SCPayload
-from sawtooth_sdk.protobuf.payload_pb2 import CreateAgentAction
-from sawtooth_sdk.protobuf.payload_pb2 import CreateProposalAction
-from sawtooth_sdk.protobuf.payload_pb2 import AnswerProposalAction
-from sawtooth_sdk.protobuf.payload_pb2 import CreateRecordAction
-from sawtooth_sdk.protobuf.payload_pb2 import \
-    CreateRecordTypeAction
-from sawtooth_sdk.protobuf.payload_pb2 import FinalizeRecordAction
-from sawtooth_sdk.protobuf.payload_pb2 import \
-    UpdatePropertiesAction
-from sawtooth_sdk.protobuf.payload_pb2 import RevokeReporterAction
-
-from sawtooth_sdk.protobuf.property_pb2 import PropertySchema
-from sawtooth_sdk.protobuf.property_pb2 import PropertyValue
+from sawtooth_sdk.protobuf.payload_pb2 import *
+from sawtooth_sdk.protobuf.property_pb2 import *
 
 
 LOGGER = logging.getLogger(__name__)
