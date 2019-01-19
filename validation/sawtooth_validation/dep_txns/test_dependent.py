@@ -80,20 +80,5 @@ class TestSmallBankDependentTxns(DepTxnBaseTest):
         
 
 
-class TestSupplyChainDependentTxns(DepTxnBaseTest):
-    async def test_agent_dep_txns(self,setup_supply_agent):  
-        batch_list = setup_supply_agent
-                 
-        for batch in batch_list:
-            try:
-                response = self.post_batch(batch)
-            except urllib.error.HTTPError as error:
-                response = json.loads(error.fp.read().decode('utf-8'))
-        print(response)
-             
-        self.assert_batch_validity(response)
-        self.assert_txn_validity(response)
-                 
-                
-        
-    
+
+               
