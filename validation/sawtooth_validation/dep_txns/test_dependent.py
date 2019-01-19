@@ -36,10 +36,10 @@ from sawtooth_validation.base import DepTxnBaseTest
 from fixtures import setup_write_check,\
                      setup_transact_savings,setup_send_payment,\
                      setup_invalid,setup_deposit_checking,\
-                     setup_dep_accounts
+                     setup_dep_accounts,setup_supply_agent
 
 
-class TestDependentTxns(DepTxnBaseTest):
+class TestSmallBankDependentTxns(DepTxnBaseTest):
     async def test_acc_dep_txns(self,setup_dep_accounts):  
         batch_list = setup_dep_accounts
                  
@@ -75,6 +75,22 @@ class TestDependentTxns(DepTxnBaseTest):
             except urllib.error.HTTPError as error:
                 response = json.loads(error.fp.read().decode('utf-8'))
             
+        self.assert_batch_validity(response)
+        self.assert_txn_validity(response)
+        
+
+
+class TestSupplyChainDependentTxns(DepTxnBaseTest):
+    async def test_agent_dep_txns(self,setup_supply_agent):  
+        batch_list = setup_supply_agent
+                 
+        for batch in batch_list:
+            try:
+                response = self.post_batch(batch)
+            except urllib.error.HTTPError as error:
+                response = json.loads(error.fp.read().decode('utf-8'))
+        print(response)
+             
         self.assert_batch_validity(response)
         self.assert_txn_validity(response)
                  
