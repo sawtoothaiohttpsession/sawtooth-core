@@ -98,8 +98,8 @@ class SupplyChainDependentTxns(Transaction):
         return self.factory._create_batch(txns)
     
     def _create_txn(self,txn):
-        self.factory.create_payload(address,payload)
-        return
+        return self.factory.create_payload(address,payload)
+        
         
     def _calculate_address(self,agent):
         NAMESPACE= hashlib.sha512('smallbank'.encode('utf-8')).hexdigest()[0:6] 
