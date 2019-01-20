@@ -123,11 +123,9 @@ class SupplyChainDependentTxns(Transaction):
 
 class SmallBankCyclicTxns(Transaction):
     def __init__(self,signer):
-        context = create_context('secp256k1')
-        private_key = context.new_random_private_key()
-        signer = CryptoFactory(context).new_signer(private_key)
-        self.payload=SmallBankMessageFactory(signer=signer)
-    
+         signer = self.get_signer() 
+         self.factory=SmallBankMessageFactory(signer=signer)
+          
     def get_signer(self):
         context = create_context('secp256k1')
         private_key = context.new_random_private_key()
@@ -143,11 +141,10 @@ class SmallBankCyclicTxns(Transaction):
 
 class SupplyChainCyclicTxns(Transaction):
     def __init__(self,signer):
-        context = create_context('secp256k1')
-        private_key = context.new_random_private_key()
-        signer = CryptoFactory(context).new_signer(private_key)
-        self.payload=SupplyChainMessageFactory(signer=signer)
-    
+        signer = self.get_signer()
+        self.factory=SupplyChainMessageFactory(signer=signer)
+        self.public_key = self.factory._factory.get_public_key()
+        
     def get_signer(self):
         context = create_context('secp256k1')
         private_key = context.new_random_private_key()
