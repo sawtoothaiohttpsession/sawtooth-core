@@ -28,8 +28,6 @@ from sawtooth_validation.rest_client import RestClient
 LOGGER = logging.getLogger(__name__)
 LOGGER.setLevel(logging.INFO)
 
-
-from sawtooth_sdk.protobuf.smallbank_pb2 import *
                                       
 from sawtooth_validation.base import DepTxnBaseTest
 
@@ -78,7 +76,3 @@ class TestSmallBankDependentTxns(DepTxnBaseTest):
         self.assert_batch_validity(response)
         self.assert_txn_validity(response)
         
-
-
-
-               
