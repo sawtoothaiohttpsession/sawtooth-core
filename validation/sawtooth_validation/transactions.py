@@ -106,7 +106,6 @@ class SupplyChainDependentTxns(Transaction):
     
     def _create_txn(self,txn):
         return self.factory.create_payload(address,payload)
-    
         
     def _calculate_address(self):
         NAMESPACE= hashlib.sha512('supplychain'.encode('utf-8')).hexdigest()[0:6] 
@@ -147,7 +146,7 @@ class SupplyChainCyclicTxns(Transaction):
         context = create_context('secp256k1')
         private_key = context.new_random_private_key()
         signer = CryptoFactory(context).new_signer(private_key)
-        self.payload=SmallBankMessageFactory(signer=signer)
+        self.payload=SupplyChainMessageFactory(signer=signer)
     
     def get_signer(self):
         context = create_context('secp256k1')
