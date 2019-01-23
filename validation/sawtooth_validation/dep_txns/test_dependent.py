@@ -81,88 +81,88 @@ class TestSmallBankDependentTxns(DepTxnBaseTest):
         self.assert_txn_validity(response)
         
         
-   async def test_write_check_txns(self,setup_write_check):  
+    async def test_write_check_txns(self,setup_write_check):  
         batch_list = setup_write_check
 
-         for batch in batch_list:
+        for batch in batch_list:
             try:
                 response = self.post_batch(batch)
             except urllib.error.HTTPError as error:
                 response = json.loads(error.fp.read().decode('utf-8'))
 
-         self.assert_batch_validity(response)
+        self.assert_batch_validity(response)
         self.assert_txn_validity(response)
 
-     async def test_invalid_write_check_txns(self,setup_invalid_write_check):  
+    async def test_invalid_write_check_txns(self,setup_invalid_write_check):  
         batch_list = setup_invalid_write_check
 
-         for batch in batch_list:
+        for batch in batch_list:
             try:
                 response = self.post_batch(batch)
             except urllib.error.HTTPError as error:
                 response = json.loads(error.fp.read().decode('utf-8'))
 
-         self.assert_batch_validity(response)
+        self.assert_batch_validity(response)
         self.assert_txn_validity(response)
 
-     async def test_setup_invalid_deposit_checking(self,setup_invalid_deposit_checking):  
+    async def test_setup_invalid_deposit_checking(self,setup_invalid_deposit_checking):  
         batch_list = setup_invalid_deposit_checking
 
-         for batch in batch_list:
+        for batch in batch_list:
             try:
                 response = self.post_batch(batch)
             except urllib.error.HTTPError as error:
                 response = json.loads(error.fp.read().decode('utf-8'))
 
-         self.assert_batch_validity(response)
+        self.assert_batch_validity(response)
         self.assert_txn_validity(response)
 
-     async def test_invalid_send_payment_txns(self,setup_invalid_send_payment):  
+    async def test_invalid_send_payment_txns(self,setup_invalid_send_payment):  
         batch_list = setup_invalid_send_payment
 
-         for batch in batch_list:
+        for batch in batch_list:
             try:
                 response = self.post_batch(batch)
             except urllib.error.HTTPError as error:
                 response = json.loads(error.fp.read().decode('utf-8'))
 
-         self.assert_batch_validity(response)
+        self.assert_batch_validity(response)
         self.assert_txn_validity(response)
 
-     async def test_transact_savings_txns(self,setup_transact_savings):  
+    async def test_transact_savings_txns(self,setup_transact_savings):  
         batch_list = setup_transact_savings
 
-         for batch in batch_list:
+        for batch in batch_list:
             try:
                 response = self.post_batch(batch)
             except urllib.error.HTTPError as error:
                 response = json.loads(error.fp.read().decode('utf-8'))
 
-         self.assert_batch_validity(response)
+        self.assert_batch_validity(response)
         self.assert_txn_validity(response) 
 
-     async def test_invalid_transact_savings_txns(self,setup_invalid_transact_savings):  
+    async def test_invalid_transact_savings_txns(self,setup_invalid_transact_savings):  
         batch_list = setup_invalid_transact_savings
 
-         for batch in batch_list:
+        for batch in batch_list:
             try:
                 response = self.post_batch(batch)
             except urllib.error.HTTPError as error:
                 response = json.loads(error.fp.read().decode('utf-8'))
 
-         self.assert_batch_validity(response)
+        self.assert_batch_validity(response)
         self.assert_txn_validity(response)   
 
 
-     async def test_amalgamate_accounts_txns(self,setup_amalgamate_accounts):  
+    async def test_amalgamate_accounts_txns(self,setup_amalgamate_accounts):  
         batch_list = setup_amalgamate_accounts
 
-         for batch in batch_list:
+        for batch in batch_list:
             try:
                 response = self.post_batch(batch)
             except urllib.error.HTTPError as error:
                 response = json.loads(error.fp.read().decode('utf-8'))
 
-         self.assert_batch_validity(response)
+        self.assert_batch_validity(response)
         self.assert_txn_validity(response) 
         
