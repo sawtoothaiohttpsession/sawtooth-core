@@ -20,11 +20,10 @@ import json
 
 from google.protobuf.json_format import MessageToDict
 
-from sawtooth_validation.transactions import \
-                         SmallBankDependentTxns, \
+from transactions import SmallBankDependentTxns, \
                          SupplyChainDependentTxns
+                         
  
-    
 LOGGER = logging.getLogger(__name__)
 LOGGER.setLevel(logging.INFO)
 
