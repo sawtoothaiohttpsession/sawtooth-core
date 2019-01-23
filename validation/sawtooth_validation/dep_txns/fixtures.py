@@ -225,7 +225,7 @@ def setup_invalid_amalgamate_accounts(request):
     batch_list = [batch1,batch2]
     return batch_list
   
-  @pytest.fixture(scope="function")
+@pytest.fixture(scope="function")
 def setup_invalid_transact_savings(request):
     """Setup method for posting batches and returning the 
        response
@@ -239,12 +239,12 @@ def setup_invalid_transact_savings(request):
             preserving_proto_field_name=True)
     txn_id=dict['header_signature']
 
-     txn2=dep_txns._create_transact_savings(3,0)
+    txn2=dep_txns._create_transact_savings(3,0)
     batch2=dep_txns.create_batch([txn2])
     batch_list = [batch1,batch2]
     return batch_list
 
- @pytest.fixture(scope="function")
+@pytest.fixture(scope="function")
 def setup_invalid_deposit_checking(request):
     """Setup method for posting batches and returning the 
        response
