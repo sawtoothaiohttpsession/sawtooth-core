@@ -80,7 +80,7 @@ class SmallBankMessageFactory:
         self.payload.send_payment.amount=amount
         return self.payload
     
-    def amalgate_accounts(self,source_cust_id, dest_cust_id):
+    def amalgamate_accounts(self,source_cust_id, dest_cust_id):
         self.payload.payload_type=6
         self.payload.amalgamate.source_customer_id=source_cust_id
         self.payload.amalgamate.dest_customer_id=dest_cust_id
