@@ -3,4 +3,5 @@ pytest-aiohttp==0.3.0
 pytest-json-report==0.7.0
 pytest-metadata==1.7.0
 pytest-ordering==0.5
-
+aiohttp==3.4.4
+asyncio==3.4.3
