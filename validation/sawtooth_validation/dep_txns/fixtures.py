@@ -17,6 +17,7 @@ import pytest
 import logging
 import urllib
 import json
+from random import randint
 
 from google.protobuf.json_format import MessageToDict
 
@@ -78,7 +79,7 @@ def setup_send_payment(request):
             including_default_value_fields=True,
             preserving_proto_field_name=True)
     txn_id=dict['header_signature']
-    txn2=dep_txns._create_send_payment(1,2,2,deps=[txn_id])
+    txn2=dep_txns._create_send_payment(2,1,2,deps=[txn_id])
     batch2=dep_txns.create_batch([txn2])
     batch_list = [batch1,batch2]
     return batch_list
@@ -183,7 +184,7 @@ def setup_invalid_send_payment(request):
             including_default_value_fields=True,
             preserving_proto_field_name=True)
     txn_id=dict['header_signature']
-    txn2=dep_txns._create_send_payment(1,2,2,deps=[txn_id])
+    txn2=dep_txns._create_send_payment(1,3,2,deps=[txn_id])
     batch2=dep_txns.create_batch([txn2])
     batch_list = [batch1,batch2]
     return batch_list
@@ -212,14 +213,14 @@ def setup_invalid_amalgamate_accounts(request):
        response
     """
     dep_txns=SmallBankDependentTxns()
-    txn1=dep_txns._amalgamate_accounts(1,6)
+    txn1=dep_txns._amalgamate_accounts(1,2)
     batch1=dep_txns.create_batch([txn1])
     dict = MessageToDict(
             txn1,
             including_default_value_fields=True,
             preserving_proto_field_name=True)
     txn_id=dict['header_signature']
-    txn2=dep_txns._amalgamate_accounts(1,6,deps=[txn_id])
+    txn2=dep_txns._amalgamate_accounts(1,3,deps=[txn_id])
     batch2=dep_txns.create_batch([txn2])
     batch_list = [batch1,batch2]
     return batch_list
@@ -257,6 +258,116 @@ def setup_invalid_deposit_checking(request):
             preserving_proto_field_name=True)
     txn_id=dict['header_signature'] 
     txn2=dep_txns._create_deposit_checking(5,0,deps=[txn_id])
+    batch2=dep_txns.create_batch([txn2])
+    batch_list = [batch1,batch2]
+    return batch_list
+
+@pytest.fixture(scope="function")
+def setup_dep_accounts_invalid(request):
+    """Setup method for posting batches and returning the 
+       response
+    """
+    dep_txns=SmallBankDependentTxns()
+    randomAccNum = randint(0, 1000)
+    txn1=dep_txns._create_account(randomAccNum,'CustRandom', 100)
+    batch1=dep_txns.create_batch([txn1])
+    dict = MessageToDict(
+            txn1,
+            including_default_value_fields=True,
+            preserving_proto_field_name=True)
+    txn_id=dict['header_signature'] 
+    
+    txn2=dep_txns._create_account(randomAccNum,'', 100, deps=[txn_id])
+    batch2=dep_txns.create_batch([txn2])
+    batch_list=[batch1,batch2]
+    return batch_list
+
+@pytest.fixture(scope="function")
+def setup_invalid_Address_send_payment(request):
+    """Setup method for posting batches and returning the 
+       response
+    """
+    dep_txns=SmallBankDependentTxns()
+    txn1=dep_txns._create_send_payment(1,2,3)
+    batch1=dep_txns.create_batch([txn1])
+    dict = MessageToDict(
+            txn1,
+            including_default_value_fields=True,
+            preserving_proto_field_name=True)
+    txn_id=dict['header_signature']
+    txn2=dep_txns._create_send_payment_invalid_Address(2,1,2,deps=[txn_id])
+    batch2=dep_txns.create_batch([txn2])
+    batch_list = [batch1,batch2]
+    return batch_list
+
+@pytest.fixture(scope="function")
+def setup_invalid_Address_write_check(request):
+    """Setup method for posting batches and returning the 
+       response
+    """
+    dep_txns=SmallBankDependentTxns()
+    txn1=dep_txns._create_write_check(1,100)
+    batch1=dep_txns.create_batch([txn1])
+    dict = MessageToDict(
+            txn1,
+            including_default_value_fields=True,
+            preserving_proto_field_name=True)
+    txn_id=dict['header_signature']
+    txn2=dep_txns._create_write_check_invalid_Address(2,100,deps=[txn_id])
+    batch2=dep_txns.create_batch([txn2])
+    batch_list = [batch1,batch2]
+    return batch_list
+
+@pytest.fixture(scope="function")
+def setup_invalid_id_dep_write_check(request):
+    """Setup method for posting batches and returning the 
+       response
+    """
+    dep_txns=SmallBankDependentTxns()
+    txn1=dep_txns._create_write_check(1,400)
+    batch1=dep_txns.create_batch([txn1])
+    dict = MessageToDict(
+            txn1,
+            including_default_value_fields=True,
+            preserving_proto_field_name=True)
+    txn_id=dict['header_signature'] +'asd'
+    txn2=dep_txns._create_write_check(2,500,deps=[txn_id])
+    batch2=dep_txns.create_batch([txn2])
+    batch_list = [batch1,batch2]
+    return batch_list
+
+@pytest.fixture(scope="function")
+def setup_invalid_id_dep_send_payment(request):
+    """Setup method for posting batches and returning the 
+       response
+    """
+    dep_txns=SmallBankDependentTxns()
+    txn1=dep_txns._create_send_payment(1,2,3)
+    batch1=dep_txns.create_batch([txn1])
+    dict = MessageToDict(
+            txn1,
+            including_default_value_fields=True,
+            preserving_proto_field_name=True)
+    txn_id=dict['header_signature']+'abc'
+    txn2=dep_txns._create_send_payment_invalid_Address(2,1,2,deps=[txn_id])
+    batch2=dep_txns.create_batch([txn2])
+    batch_list = [batch1,batch2]
+    return batch_list
+
+@pytest.fixture(scope="function")
+def setup_empty_id_dep_send_payment(request):
+    """Setup method for posting batches and returning the 
+       response
+    """
+    dep_txns=SmallBankDependentTxns()
+    txn1=dep_txns._create_send_payment(1,2,3)
+    batch1=dep_txns.create_batch([txn1])
+    dict = MessageToDict(
+            txn1,
+            including_default_value_fields=True,
+            preserving_proto_field_name=True)
+    txn_id=dict['header_signature']
+    txn2=dep_txns._create_send_payment_invalid_Address(2,1,2,deps=['', txn_id])
     batch2=dep_txns.create_batch([txn2])
     batch_list = [batch1,batch2]
     return batch_list
