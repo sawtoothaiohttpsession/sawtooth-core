@@ -38,7 +38,9 @@ from fixtures import setup_write_check,\
                      setup_dep_accounts,setup_supply_agent, setup_invalid_write_check,\
                      setup_amalgamate_accounts, setup_invalid_transact_savings, \
                      setup_transact_savings,setup_invalid_send_payment, setup_invalid_amalgamate_accounts, \
-                     setup_invalid_deposit_checking
+                     setup_invalid_deposit_checking, setup_invalid_Address_send_payment, \
+                     setup_invalid_Address_write_check, setup_invalid_id_dep_write_check, setup_dep_accounts_invalid, \
+                     setup_invalid_id_dep_send_payment, setup_empty_id_dep_send_payment
 
 
 class TestSmallBankDependentTxns(DepTxnBaseTest):
@@ -50,10 +52,9 @@ class TestSmallBankDependentTxns(DepTxnBaseTest):
                 response = self.post_batch(batch)
             except urllib.error.HTTPError as error:
                 response = json.loads(error.fp.read().decode('utf-8'))
-        print(response)
              
-        self.assert_batch_validity(response)
-        self.assert_txn_validity(response)
+            self.assert_batch_validity(response)
+            self.assert_txn_validity(response)
 
     
     async def test_deposit_checking_txns(self,setup_deposit_checking):  
@@ -65,8 +66,8 @@ class TestSmallBankDependentTxns(DepTxnBaseTest):
             except urllib.error.HTTPError as error:
                 response = json.loads(error.fp.read().decode('utf-8'))
             
-        self.assert_batch_validity(response)
-        self.assert_txn_validity(response)
+            self.assert_batch_validity(response)
+            self.assert_txn_validity(response)
     
     async def test_send_payment_txns(self,setup_send_payment):  
         batch_list = setup_send_payment
@@ -77,8 +78,8 @@ class TestSmallBankDependentTxns(DepTxnBaseTest):
             except urllib.error.HTTPError as error:
                 response = json.loads(error.fp.read().decode('utf-8'))
             
-        self.assert_batch_validity(response)
-        self.assert_txn_validity(response)
+            self.assert_batch_validity(response)
+            self.assert_txn_validity(response)
         
         
     async def test_write_check_txns(self,setup_write_check):  
@@ -90,8 +91,8 @@ class TestSmallBankDependentTxns(DepTxnBaseTest):
             except urllib.error.HTTPError as error:
                 response = json.loads(error.fp.read().decode('utf-8'))
 
-        self.assert_batch_validity(response)
-        self.assert_txn_validity(response)
+            self.assert_batch_validity(response)
+            self.assert_txn_validity(response)
 
     async def test_invalid_write_check_txns(self,setup_invalid_write_check):  
         batch_list = setup_invalid_write_check
@@ -102,8 +103,8 @@ class TestSmallBankDependentTxns(DepTxnBaseTest):
             except urllib.error.HTTPError as error:
                 response = json.loads(error.fp.read().decode('utf-8'))
 
-        self.assert_batch_validity(response)
-        self.assert_txn_validity(response)
+            self.assert_batch_validity(response)
+            self.assert_txn_validity(response)
 
     async def test_setup_invalid_deposit_checking(self,setup_invalid_deposit_checking):  
         batch_list = setup_invalid_deposit_checking
@@ -114,8 +115,8 @@ class TestSmallBankDependentTxns(DepTxnBaseTest):
             except urllib.error.HTTPError as error:
                 response = json.loads(error.fp.read().decode('utf-8'))
 
-        self.assert_batch_validity(response)
-        self.assert_txn_validity(response)
+            self.assert_batch_validity(response)
+            self.assert_txn_validity(response)
 
     async def test_invalid_send_payment_txns(self,setup_invalid_send_payment):  
         batch_list = setup_invalid_send_payment
@@ -126,8 +127,8 @@ class TestSmallBankDependentTxns(DepTxnBaseTest):
             except urllib.error.HTTPError as error:
                 response = json.loads(error.fp.read().decode('utf-8'))
 
-        self.assert_batch_validity(response)
-        self.assert_txn_validity(response)
+            self.assert_batch_validity(response)
+            self.assert_txn_validity(response)
 
     async def test_transact_savings_txns(self,setup_transact_savings):  
         batch_list = setup_transact_savings
@@ -138,8 +139,8 @@ class TestSmallBankDependentTxns(DepTxnBaseTest):
             except urllib.error.HTTPError as error:
                 response = json.loads(error.fp.read().decode('utf-8'))
 
-        self.assert_batch_validity(response)
-        self.assert_txn_validity(response) 
+            self.assert_batch_validity(response)
+            self.assert_txn_validity(response) 
 
     async def test_invalid_transact_savings_txns(self,setup_invalid_transact_savings):  
         batch_list = setup_invalid_transact_savings
@@ -150,8 +151,8 @@ class TestSmallBankDependentTxns(DepTxnBaseTest):
             except urllib.error.HTTPError as error:
                 response = json.loads(error.fp.read().decode('utf-8'))
 
-        self.assert_batch_validity(response)
-        self.assert_txn_validity(response)   
+            self.assert_batch_validity(response)
+            self.assert_txn_validity(response)   
 
 
     async def test_amalgamate_accounts_txns(self,setup_amalgamate_accounts):  
@@ -163,6 +164,109 @@ class TestSmallBankDependentTxns(DepTxnBaseTest):
             except urllib.error.HTTPError as error:
                 response = json.loads(error.fp.read().decode('utf-8'))
 
-        self.assert_batch_validity(response)
-        self.assert_txn_validity(response) 
+            self.assert_batch_validity(response)
+            self.assert_txn_validity(response) 
         
+    async def test_invalid_amalgamate_accounts_txns(self,setup_invalid_amalgamate_accounts):  
+        batch_list = setup_invalid_amalgamate_accounts
+ 
+        for batch in batch_list:
+            try:
+                response = self.post_batch(batch)
+            except urllib.error.HTTPError as error:
+                response_json = error.fp.read().decode('utf-8').replace('\0', '')
+                response = json.loads(response_json)
+  
+            self.assert_batch_validity(response)
+            self.assert_txn_validity(response)
+         
+    async def test_setup_empty_id_dep_send_payment_txns(self,setup_empty_id_dep_send_payment):  
+        batch_list = setup_empty_id_dep_send_payment
+  
+        for batch in batch_list:
+            try:
+                response = self.post_batch(batch)
+            except urllib.error.HTTPError as error:
+                response = json.loads(error.fp.read().decode('utf-8'))
+  
+            self.assert_batch_validity(response)
+            self.assert_txn_validity(response)
+            
+    async def test_empty_id_dep_send_payment_txns(self,setup_invalid_id_dep_send_payment):  
+        batch_list = setup_invalid_id_dep_send_payment
+  
+        for batch in batch_list:
+            try:
+                response = self.post_batch(batch)
+            except urllib.error.HTTPError as error:
+                response = json.loads(error.fp.read().decode('utf-8'))
+  
+            self.assert_batch_validity(response)
+            self.assert_txn_validity(response)
+        
+    async def test_setup_dep_accounts_invalid(self, setup_dep_accounts_invalid):
+        batch_list = setup_dep_accounts_invalid
+        responseList = []
+        for batch in batch_list:
+            try:
+               response = self.post_batch(batch)
+               responseList.append(response)
+            except urllib.error.HTTPError as error:
+                response_json = error.fp.read().decode('utf-8').replace('\0', '')
+                response = json.loads(response_json)
+                responseList.append(response)
+                
+            self.assert_batch_validity(response)
+            self.assert_txn_validity(response)
+        
+        assert responseList[1]['data'][0]['invalid_transactions'][0]['message'] == 'Account already exists'
+        
+    async def test_invalid_Address_send_payment_txns(self,setup_invalid_Address_send_payment):  
+        batch_list = setup_invalid_Address_send_payment
+        responseList = []
+        for batch in batch_list:
+            try:
+               response = self.post_batch(batch)
+               responseList.append(response)
+            except urllib.error.HTTPError as error:
+#                 response = json.loads(error.fp.read().decode('utf-8'))
+                response_json = error.fp.read().decode('utf-8').replace('\0', '')
+                response = json.loads(response_json)
+                responseList.append(response)
+
+            self.assert_batch_validity(response)
+            self.assert_txn_validity(response)
+        
+        assert 'Tried to get unauthorized address' in responseList[1]['data'][0]['invalid_transactions'][0]['message']
+        
+    async def test_invalid_Address_write_check_txns(self,setup_invalid_Address_write_check):  
+        batch_list = setup_invalid_Address_write_check
+        responseList = []
+        for batch in batch_list:
+            try:
+               response = self.post_batch(batch)
+               responseList.append(response)
+               self.assert_batch_validity(response)
+               self.assert_txn_validity(response)
+            except urllib.error.HTTPError as error:
+#                 response = json.loads(error.fp.read().decode('utf-8'))
+                response_json = error.fp.read().decode('utf-8').replace('\0', '')
+                response = json.loads(response_json)
+                responseList.append(response)
+            self.assert_batch_validity(response)
+            self.assert_txn_validity(response)
+            
+        assert 'Tried to get unauthorized address' in responseList[1]['data'][0]['invalid_transactions'][0]['message']
+        
+    async def test_setup_invalid_id_dep_write_check_txns(self,setup_invalid_id_dep_write_check):  
+        batch_list = setup_invalid_id_dep_write_check
+        for batch in batch_list:
+            try:
+                response = self.post_batch(batch)
+               
+            except urllib.error.HTTPError as error:
+                response_json = error.fp.read().decode('utf-8').replace('\0', '')
+                response = json.loads(response_json)
+                
+            self.assert_batch_validity(response)
+            self.assert_txn_validity(response)
