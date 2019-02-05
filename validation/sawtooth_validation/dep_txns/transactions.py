@@ -59,13 +59,18 @@ class SmallBankDependentTxns(Transaction):
         addr1=NAMESPACE+CUST_HEX
         return addr1
     
+    def _invalid_address(self,cust1):
+        NAMESPACE= hashlib.sha512('smallbank'.encode('utf-8')).hexdigest()[0:5] 
+        CUST_HEX= hashlib.sha512(str(cust1).encode('utf-8')).hexdigest()[0:63]
+        addr1=NAMESPACE+CUST_HEX
+        return addr1
+    
     def _create_account(self,cust_id,name,amount,deps=None):
         acc = self.factory.create_account(cust_id,name,amount)
         address=[self._calculate_address(cust_id)]
         print(deps)
         txn = self.factory.create_payload(address,acc,deps)
-        return txn
-    
+        return txn    
     
     def _create_send_payment(self,source_cust_id, dest_cust_id,amount,deps=None):
         acc = self.factory.send_payment(source_cust_id,dest_cust_id,amount)
@@ -76,7 +81,16 @@ class SmallBankDependentTxns(Transaction):
         print(address_list)
         txn = self.factory.create_payload(address_list,acc,deps)
         return txn
-        
+    
+    def _create_send_payment_invalid_Address(self,source_cust_id, dest_cust_id,amount,deps=None):
+        acc = self.factory.send_payment(source_cust_id,dest_cust_id,amount)
+        print(acc)
+        address1=self._invalid_address(source_cust_id)
+        address2=self._invalid_address(dest_cust_id)
+        address_list=[address1,address2]
+        print(address_list)
+        txn = self.factory.create_payload(address_list,acc,deps)
+        return txn   
     
     def _create_deposit_checking(self,cust_id,amount,deps=None):
         acc = self.factory.deposit_checking(cust_id,amount)
@@ -92,6 +106,13 @@ class SmallBankDependentTxns(Transaction):
         txn = self.factory.create_payload(address,acc,deps)
         return txn
 
+    def _create_write_check_invalid_Address(self,cust_id,amount,deps=None):
+        acc = self.factory.write_check(cust_id,amount)
+        print(acc)
+        address=[self._invalid_address(cust_id)]
+        txn = self.factory.create_payload(address,acc,deps)
+        return txn
+    
     def _create_transact_savings(self,cust_id,amount,deps=None):
         acc = self.factory.transact_saving(cust_id,amount)
         print(acc)
