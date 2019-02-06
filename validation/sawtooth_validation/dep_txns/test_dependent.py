@@ -22,6 +22,7 @@ import hashlib
 import cbor
 import base64
 import urllib
+import inspect
 
 from sawtooth_validation.rest_client import RestClient
 
@@ -42,6 +43,24 @@ from fixtures import setup_write_check,\
                      setup_invalid_Address_write_check, setup_invalid_id_dep_write_check, setup_dep_accounts_invalid, \
                      setup_invalid_id_dep_send_payment, setup_empty_id_dep_send_payment
 
+@pytest.fixture(autouse=True, scope="function")
+def desc_test(json_metadata, request, capsys):
+   
+    count=0
+    for f in [TestSmallBankDependentTxns.test_acc_dep_txns,TestSmallBankDependentTxns.test_deposit_checking_txns,
+              TestSmallBankDependentTxns.test_send_payment_txns,TestSmallBankDependentTxns.test_write_check_txns,
+              TestSmallBankDependentTxns.test_invalid_write_check_txns,TestSmallBankDependentTxns.test_setup_invalid_deposit_checking,
+              TestSmallBankDependentTxns.test_invalid_send_payment_txns,TestSmallBankDependentTxns.test_transact_savings_txns,
+              TestSmallBankDependentTxns.test_invalid_transact_savings_txns,TestSmallBankDependentTxns.test_amalgamate_accounts_txns,
+              TestSmallBankDependentTxns.test_invalid_amalgamate_accounts_txns,TestSmallBankDependentTxns.test_setup_empty_id_dep_send_payment_txns,
+              TestSmallBankDependentTxns.test_invalid_id_dep_send_payment_txns,TestSmallBankDependentTxns.test_setup_dep_accounts_invalid,
+              TestSmallBankDependentTxns.test_invalid_Address_send_payment_txns,TestSmallBankDependentTxns.test_invalid_Address_write_check_txns,
+              TestSmallBankDependentTxns.test_setup_invalid_id_dep_write_check_txns
+              ]:
+             
+
+          json_metadata[count] = inspect.getdoc(f)
+          count=count + 1
 
 class TestSmallBankDependentTxns(DepTxnBaseTest):
     async def test_acc_dep_txns(self,setup_dep_accounts):
