@@ -41,7 +41,9 @@ from fixtures import setup_write_check,\
                      setup_transact_savings,setup_invalid_send_payment, setup_invalid_amalgamate_accounts, \
                      setup_invalid_deposit_checking, setup_invalid_Address_send_payment, \
                      setup_invalid_Address_write_check, setup_invalid_id_dep_write_check, setup_dep_accounts_invalid, \
-                     setup_invalid_id_dep_send_payment, setup_empty_id_dep_send_payment
+                     setup_invalid_id_dep_send_payment, setup_empty_id_dep_send_payment, \
+                     setup_invalid_Address_deposit_checking, setup_invalid_Address_transact_savings, \
+                     setup_invalid_Address_amalgamate_accounts
 
 @pytest.fixture(autouse=True, scope="function")
 def desc_test(json_metadata, request, capsys):
@@ -55,7 +57,8 @@ def desc_test(json_metadata, request, capsys):
               TestSmallBankDependentTxns.test_invalid_amalgamate_accounts_txns,TestSmallBankDependentTxns.test_setup_empty_id_dep_send_payment_txns,
               TestSmallBankDependentTxns.test_invalid_id_dep_send_payment_txns,TestSmallBankDependentTxns.test_setup_dep_accounts_invalid,
               TestSmallBankDependentTxns.test_invalid_Address_send_payment_txns,TestSmallBankDependentTxns.test_invalid_Address_write_check_txns,
-              TestSmallBankDependentTxns.test_setup_invalid_id_dep_write_check_txns
+              TestSmallBankDependentTxns.test_setup_invalid_id_dep_write_check_txns, TestSmallBankDependentTxns.test_setup_invalid_Address_deposit_checking,
+              TestSmallBankDependentTxns.test_invalid_Address_transact_savings_txns, TestSmallBankDependentTxns.test_invalid_Address_amalgamate_accounts_txns
               ]:
              
 
@@ -305,3 +308,58 @@ class TestSmallBankDependentTxns(DepTxnBaseTest):
                 
             self.assert_batch_validity(response)
             self.assert_txn_validity(response)
+            
+    async def test_setup_invalid_Address_deposit_checking(self,setup_invalid_Address_deposit_checking):
+        '''Testing deposit check with invalid Address txns'''  
+        batch_list = setup_invalid_Address_deposit_checking
+        responseList = []
+        for batch in batch_list:
+            try:
+                response = self.post_batch(batch)
+                responseList.append(response)
+                print(response)
+            except urllib.error.HTTPError as error:
+                response_json = error.fp.read().decode('utf-8').replace('\0', '')
+                response = json.loads(response_json)
+                responseList.append(response)
+  
+            self.assert_batch_validity(response)
+            self.assert_txn_validity(response)
+            
+        assert 'Tried to get unauthorized address' in responseList[1]['data'][0]['invalid_transactions'][0]['message']
+
+    async def test_invalid_Address_transact_savings_txns(self,setup_invalid_Address_transact_savings): 
+        '''Testing transact savings with invalid Address txns''' 
+        batch_list = setup_invalid_Address_transact_savings
+        responseList = []
+        for batch in batch_list:
+            try:
+                response = self.post_batch(batch)
+                responseList.append(response)
+                print(response)
+            except urllib.error.HTTPError as error:
+                response_json = error.fp.read().decode('utf-8').replace('\0', '')
+                response = json.loads(response_json)
+                responseList.append(response)
+  
+            self.assert_batch_validity(response)
+            self.assert_txn_validity(response)
+            
+        assert 'Tried to get unauthorized address' in responseList[1]['data'][0]['invalid_transactions'][0]['message']
+        
+    async def test_invalid_Address_amalgamate_accounts_txns(self,setup_invalid_Address_amalgamate_accounts): 
+        '''Testing amalgamate account txns with invalid address txns''' 
+        batch_list = setup_invalid_Address_amalgamate_accounts
+        responseList = []
+        for batch in batch_list:
+            try:
+                response = self.post_batch(batch)
+                responseList.append(response)
+            except urllib.error.HTTPError as error:
+                response_json = error.fp.read().decode('utf-8').replace('\0', '')
+                response = json.loads(response_json)
+                responseList.append(response)
+            self.assert_batch_validity(response)
+            self.assert_txn_validity(response)
+            
+        assert 'Tried to get unauthorized address' in responseList[1]['data'][0]['invalid_transactions'][0]['message']

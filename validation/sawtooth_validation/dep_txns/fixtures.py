@@ -371,3 +371,58 @@ def setup_empty_id_dep_send_payment(request):
     batch2=dep_txns.create_batch([txn2])
     batch_list = [batch1,batch2]
     return batch_list
+
+@pytest.fixture(scope="function")
+def setup_invalid_Address_deposit_checking(request):
+    """Setup method for posting batches and returning the 
+       response
+    """
+    dep_txns=SmallBankDependentTxns()
+    txn1=dep_txns._create_deposit_checking(1,100)
+    batch1=dep_txns.create_batch([txn1])
+    dict = MessageToDict(
+            txn1,
+            including_default_value_fields=True,
+            preserving_proto_field_name=True)
+    txn_id=dict['header_signature'] 
+    txn2=dep_txns._create_deposit_checking_invalid_Address(2,100,deps=[txn_id])
+    batch2=dep_txns.create_batch([txn2])
+    batch_list = [batch1,batch2]
+    return batch_list
+
+@pytest.fixture(scope="function")
+def setup_invalid_Address_transact_savings(request):
+    """Setup method for posting batches and returning the 
+       response
+    """
+    dep_txns=SmallBankDependentTxns()
+    txn1=dep_txns._create_transact_savings(1,100)
+    batch1=dep_txns.create_batch([txn1])
+    dict = MessageToDict(
+            txn1,
+            including_default_value_fields=True,
+            preserving_proto_field_name=True)
+    txn_id=dict['header_signature']
+
+    txn2=dep_txns._create_transact_savings_invalid_Address(2,100)
+    batch2=dep_txns.create_batch([txn2])
+    batch_list = [batch1,batch2]
+    return batch_list
+
+@pytest.fixture(scope="function")
+def setup_invalid_Address_amalgamate_accounts(request):
+    """Setup method for posting batches and returning the 
+       response
+    """
+    dep_txns=SmallBankDependentTxns()
+    txn1=dep_txns._amalgamate_accounts(1,2)
+    batch1=dep_txns.create_batch([txn1])
+    dict = MessageToDict(
+            txn1,
+            including_default_value_fields=True,
+            preserving_proto_field_name=True)
+    txn_id=dict['header_signature']
+    txn2=dep_txns._amalgamate_accounts_invalid_Address(2,1,deps=[txn_id])
+    batch2=dep_txns.create_batch([txn2])
+    batch_list = [batch1,batch2]
+    return batch_list

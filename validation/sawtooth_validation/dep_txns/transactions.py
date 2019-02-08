@@ -99,6 +99,13 @@ class SmallBankDependentTxns(Transaction):
         txn = self.factory.create_payload(address,acc,deps)
         return txn
     
+    def _create_deposit_checking_invalid_Address(self,cust_id,amount,deps=None):
+        acc = self.factory.deposit_checking(cust_id,amount)
+        print(acc)
+        address=[self._invalid_address(cust_id)]
+        txn = self.factory.create_payload(address,acc,deps)
+        return txn
+    
     def _create_write_check(self,cust_id,amount,deps=None):
         acc = self.factory.write_check(cust_id,amount)
         print(acc)
@@ -119,7 +126,14 @@ class SmallBankDependentTxns(Transaction):
         address=[self._calculate_address(cust_id)]
         txn = self.factory.create_payload(address,acc,deps)
         return txn
-
+    
+    def _create_transact_savings_invalid_Address(self,cust_id,amount,deps=None):
+        acc = self.factory.transact_saving(cust_id,amount)
+        print(acc)
+        address=[self._invalid_address(cust_id)]
+        txn = self.factory.create_payload(address,acc,deps)
+        return txn
+    
     def _amalgamate_accounts(self,source_cust_id, dest_cust_id,deps=None):
         acc = self.factory.amalgamate_accounts(source_cust_id,dest_cust_id)
         print(acc)
