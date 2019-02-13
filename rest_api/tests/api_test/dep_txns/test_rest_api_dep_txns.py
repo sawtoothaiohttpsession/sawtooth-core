@@ -20,6 +20,7 @@ import asyncio
 import datetime
 import random
 import time
+import inspect
 
 from google.protobuf.json_format import MessageToDict
 
@@ -74,7 +75,27 @@ async def async_post_batch(url, session, data, params=None,headers=None):
                 return data
     except aiohttp.client_exceptions.ClientResponseError as error:
         LOGGER.info(error)
-          
+    
+@pytest.fixture(autouse=True, scope="function")
+def desc_test_rest_api_dep_txns(json_metadata, request, capsys):
+   
+    count=0
+    list8 = [TestPostTansactionDependencies.test_set_inc_txn_dep,TestPostTansactionDependencies.test_rest_api_double_dep_txns,
+              TestPostTansactionDependencies.test_single_set_dep_txns,TestPostTansactionDependencies.test_rest_api_single_set_dec_txns,
+              TestPostTansactionDependencies.test_rest_api_set_inc_inc_Txns_Dep,TestPostTansactionDependencies.test_rest_api_single_set_dec_same_txns,
+              TestPostTansactionDependencies.test_rest_api_single_set_dec_invalid_txns_id,TestPostTansactionDependencies.test_single_set_dep_reverse,
+              TestPostTansactionDependencies.test_valid_set_invalid_inc_txn_dep,TestPostTansactionDependencies.test_valid_set_invalid_inc_DiffKey_txn_dep,
+              TestPostTansactionDependencies.test_set_Max_txn_dep,TestPostTansactionDependencies.test_invalid_set_txn_dep,
+              TestPostTansactionDependencies.test_invalid_Address_txn_dep,TestPostTansactionDependencies.test_Multiple_Indep_Txn_txn_dep,
+              TestPostTansactionDependencies.test_inc_first_txn_dep,TestPostTansactionDependencies.test_Multiple_dep_Txn_Consecutive_dep,
+              TestPostTansactionDependencies.test_Multiple_invalid_dep_Txn_Consecutive_dep,TestPostTansactionDependencies.test_separate_batch_txn_dep
+              
+             ]
+    for f in list8 :
+
+          json_metadata[count] = inspect.getdoc(f)
+          count=count + 1
+
 
 #testing the Transaction dependencies
 class TestPostTansactionDependencies(RestApiBaseTest):
@@ -289,7 +310,7 @@ class TestPostTansactionDependencies(RestApiBaseTest):
        
     async def test_single_set_dep_txns(self, setup):
         """"1. Create first Transaction for set                                                                                                                                                                                                                      
-            2. Create second Transaction for increment with first Transaction as dependecies                           
+            2. Create second Transaction for increment with single dependecies                           
             3. Create Batch                                                                                                                                   
             4. Call POST /batches "
             Verify the transactions
@@ -400,7 +421,7 @@ class TestPostTansactionDependencies(RestApiBaseTest):
         
     async def test_rest_api_single_set_dec_txns(self, setup):
         """"1. Create first Transaction for set                                                                                                                                                                                                                      
-            2. Create second Transaction for increment with first Transaction as dependecies                           
+            2. Create second Transaction for decrement with single dependecies                           
             3. Create Batch                                                                                                                                   
             4. Call POST /batches "
             Verify the transactions
@@ -503,8 +524,8 @@ class TestPostTansactionDependencies(RestApiBaseTest):
         """1. Create first Transaction for set                                                                                                                                                                                                                      
         2. Create second Transaction for increment with first Transaction as dependecies
         3. Create third Transaction for increment with first and second Transaction as dependecies                                                                                                                
-        3. Create Batch                                                                                                                                   
-        4. Call POST /batches
+        4. Create Batch                                                                                                                                   
+        5. Call POST /batches
         Verify the transactions
         """
         LOGGER.info('Starting test for batch post')
@@ -611,7 +632,7 @@ class TestPostTansactionDependencies(RestApiBaseTest):
         
     async def test_rest_api_single_set_dec_same_txns(self, setup):
         """"1. Create first Transaction for set                                                                                                                                                                                                                      
-            2. Create second Transaction for increment with first Transaction as dependecies                           
+            2. Create second Transaction for decrement with single and same  dependencies                           
             3. Create Batch                                                                                                                                   
             4. Call POST /batches "
             Verify the transactions
@@ -720,7 +741,7 @@ class TestPostTansactionDependencies(RestApiBaseTest):
         
     async def test_rest_api_single_set_dec_invalid_txns_id(self, setup):
         """"1. Create first Transaction for set                                                                                                                                                                                                                      
-            2. Create second Transaction for increment with first Transaction as dependecies                           
+            2. Create second Transaction for decrement with invalid Transaction as dependencies                           
             3. Create Batch                                                                                                                                   
             4. Call POST /batches "
             Verify the transactions
@@ -828,7 +849,7 @@ class TestPostTansactionDependencies(RestApiBaseTest):
         
     async def test_single_set_dep_reverse(self, setup):
          """"1. Create first Transaction for set                                                                                                                                                                                                                      
-             2. Create second Transaction for increment with first Transaction as dependecies                           
+             2. Create second Transaction for increment reverse dependency                           
              3. Create Batch                                                                                                                                   
              4. Call POST /batches "
              Verify the transactions
@@ -937,7 +958,7 @@ class TestPostTansactionDependencies(RestApiBaseTest):
         2. Create second invalid Transaction for increment with first Transaction as dependecies                                                                                                          
         3. Create Batch                                                                                                                                   
         4. Call POST /batches
-        Verify the transactions. This shoud be an invalid transaction. The trird txn will be in PENDING state
+        Verify the transactions. This should be an invalid transaction. The third txn will be in PENDING state
         """
         LOGGER.info('Starting test for batch post')
         
@@ -1881,5 +1902,7 @@ class TestPostTansactionDependencies(RestApiBaseTest):
         
         LOGGER.info("Verifying the responses of the txns in third batch")           
         validate_Response_Status_txn(responses_batch_third)
+        
+
 
         

@@ -20,7 +20,7 @@ import urllib.request
 import urllib.error
 import aiohttp
 import asyncio
-
+import inspect
 
 from utils import get_state_list, get_state_address
 from fixtures import invalid_batch
@@ -52,7 +52,34 @@ STATE_NOT_FOUND = 75
 INVALID_STATE_ADDRESS = 62
 HEAD_LENGTH = 128
 TIMEOUT=5
-     
+    
+@pytest.fixture(autouse=True, scope="function")
+def desc_test_rest_api_get_state(json_metadata, request, capsys):
+   
+    count=0
+    list5 = [TestStateList.test_api_get_state_list,TestStateList.test_api_get_state_list_head,
+              TestStateList.test_api_get_state_list_invalid_batch,TestStateList.test_api_get_state_list_bad_head,
+              TestStateList.test_api_get_state_list_address,TestStateList.test_api_get_state_list_bad_address,
+              TestStateList.test_api_get_paginated_state_list,TestStateList.test_api_get_paginated_state_list_limit,
+              TestStateList.test_api_get_paginated_state_list_start,TestStateList.test_api_get_state_list_bad_paging,
+              TestStateList.test_api_get_state_list_invalid_start,TestStateList.test_api_get_state_list_invalid_limit,
+              TestStateList.test_api_get_state_list_reversed,TestStateList.test_api_get_state_data_address_prefix_namespace,
+              TestStateList.test_api_get_state_data_head_wildcard_character,TestStateList.test_api_get_state_data_head_partial_character,
+              TestStateList.test_api_get_state_data_address_partial_character,TestStateList.test_api_get_state_data_address_length,
+              TestStateList.test_api_get_state_data_address_with_odd_hex_value,TestStateList.test_api_get_state_data_address_with_reduced_length,
+              TestStateList.test_api_get_state_data_address_64_Hex,TestStateList.test_api_get_state_data_address_alter_bytes,
+              TestStateList.test_api_get_state_link_val,TestStateList.test_api_get_state_key_params,
+              TestStateList.test_api_get_each_state_head_length,TestStateList.test_rest_api_check_state_count,
+              TestStateGet.test_api_get_state_address,TestStateGet.test_api_get_bad_address,
+              TestStateDeleteRoot.test_api_get_state_delete_root,TestStateDeleteRoot.test_api_get_state_delete_not_root_node,
+            
+             ]
+    for f in list5 :
+
+          json_metadata[count] = inspect.getdoc(f)
+          count=count + 1
+         
+          
      
 class TestStateList(RestApiBaseTest):
     """This class tests the state list with different parameters
@@ -168,7 +195,7 @@ class TestStateList(RestApiBaseTest):
         self.assert_valid_error(response , INVALID_STATE_ADDRESS)
                                            
     async def test_api_get_paginated_state_list(self, setup):   
-        """Tests GET /state is reachbale using paging parameters 
+        """Tests GET /state is reachable using paging parameters 
         """
         address = setup['address']
         LOGGER.info("Starting test for state with paging parameters")
@@ -188,7 +215,7 @@ class TestStateList(RestApiBaseTest):
         self.assert_valid_error(response, INVALID_PAGING_QUERY)
     
     async def test_api_get_paginated_state_list_limit(self, setup):   
-        """Tests GET /state is reachbale using paging parameters 
+        """Tests GET /state is reachable using paging parameters with limit
         """
         address = setup['address']
         LOGGER.info("Starting test for state with paging parameters")
@@ -207,7 +234,7 @@ class TestStateList(RestApiBaseTest):
         
     
     async def test_api_get_paginated_state_list_start(self, setup):   
-        """Tests GET /state is reachbale using paging parameters 
+        """Tests GET /state is reachbale using paging parameters with start 
         """
         address = setup['address']
         LOGGER.info("Starting test for state with paging parameters")
@@ -226,7 +253,7 @@ class TestStateList(RestApiBaseTest):
         
       
     async def test_api_get_state_list_bad_paging(self, setup):   
-        """Tests GET /state is reachbale using bad paging parameters 
+        """Tests GET /state is reachable using bad paging parameters 
         """
         address = setup['address']
         LOGGER.info("Starting test for state with bad paging parameters")
@@ -551,7 +578,7 @@ class TestStateList(RestApiBaseTest):
             
 class TestStateGet(RestApiBaseTest):
     async def test_api_get_state_address(self, setup):
-        """Tests/ validate the state key parameters with data, head, link and paging               
+        """Tests state_address              
         """
         address = setup['address']
         state_address = setup['state_address'][0]
@@ -602,7 +629,7 @@ class TestStateDeleteRoot(RestApiBaseTest):
             LOGGER.info("State count not able to collect or not root/ genesis node")
 
     async def test_api_get_state_delete_not_root_node(self, setup):
-        """Tests/ validate the state of deleted block at root node
+        """Tests/ validate the state of deleted block at not root node
         """
         address = setup['address']
         count = 0

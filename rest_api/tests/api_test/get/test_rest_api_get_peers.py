@@ -19,6 +19,7 @@ import json
 import urllib.request
 import urllib.error
 import aiohttp
+import inspect
   
 from utils import get_peers
 
@@ -30,13 +31,26 @@ LOGGER.setLevel(logging.INFO)
 pytestmark = [pytest.mark.get , pytest.mark.peers]
 
 PEER_LIST = []
+
+@pytest.fixture(autouse=True, scope="function")
+def desc_test_api_get_peers(json_metadata, request, capsys):
+   
+    count=0
+    list3 =  [TestPeerList.test_api_get_peer_list
+             ]
+    for f in list3:
+
+          json_metadata[count] = inspect.getdoc(f)
+          count=count + 1
+          
+          
           
 class TestPeerList(RestApiBaseTest):
-    """This class tests the peer list with different parameters
-    """
+    
     async def test_api_get_peer_list(self, setup):
-        """Tests the peer list 
-        """
+     
+        """This class tests the peer list with different parameters
+        """  
         address = setup['address']
         expected_link = '{}/peers'.format(address)
         
@@ -48,4 +62,5 @@ class TestPeerList(RestApiBaseTest):
             LOGGER.info("Rest Api is Unreachable")
         
         self.assert_valid_link(response, expected_link)
-           
+        
+   

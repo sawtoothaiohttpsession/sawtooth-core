@@ -26,6 +26,7 @@ import requests
 import hashlib
 import aiohttp
 import asyncio
+import inspect
 
 from google.protobuf.json_format import MessageToDict
 
@@ -98,7 +99,27 @@ async def async_post_batch(url, session, data, params=None,headers=None):
                 return data
     except aiohttp.client_exceptions.ClientResponseError as error:
         LOGGER.info(error)
-        
+
+@pytest.fixture(autouse=True, scope="function")
+def desc_test_rest_api_post(json_metadata, request, capsys):
+   
+    count=0
+    list7 = [TestPostList.test_rest_api_post_batch,TestPostList.test_rest_api_no_batches,
+              TestPostList.test_rest_api_bad_protobuf,TestPostList.test_rest_api_post_wrong_header,
+              TestPostList.test_rest_api_post_same_txns,TestPostList.test_rest_api_multiple_txns_batches,
+              TestPostList.test_api_post_empty_trxns_list,TestPostList.test_api_post_batch_different_signer,
+              TestPostList.test_rest_api_post_no_endpoint,
+              TestPostInvalidTxns.test_txn_invalid_addr,TestPostInvalidTxns.test_txn_invalid_min,
+              TestPostInvalidTxns.test_txn_invalid_max,TestPostInvalidTxns.test_txn_valid_invalid_txns,
+              TestPostInvalidTxns.test_txn_invalid_valid_txns,TestPostInvalidTxns.test_txn_same_txns,
+              TestPostInvalidTxns.test_api_sent_commit_txns,TestPostInvalidTxns.test_txn_invalid_bad_addr,
+              TestPostInvalidTxns.test_txn_invalid_family_name
+              
+             ]
+    for f in list7 :
+
+          json_metadata[count] = inspect.getdoc(f)
+          count=count + 1  
         
 class TestPostList(RestApiBaseTest):
     async def test_rest_api_post_batch(self):
@@ -184,6 +205,8 @@ class TestPostList(RestApiBaseTest):
         assert check_for_consensus(chains , BLOCK_TO_CHECK_CONSENSUS) == True
         
     async def test_rest_api_no_batches(self):
+        """"Tests rest api by posting no batches
+        """
         LOGGER.info("Starting test for batch with bad protobuf")
         address = _get_client_address()
         url='{}/batches'.format(address)
@@ -200,6 +223,8 @@ class TestPostList(RestApiBaseTest):
         self.assert_valid_error(response[0], NO_BATCHES_SUBMITTED)
     
     async def test_rest_api_bad_protobuf(self):
+        """Tests rest api by posting with bad protobuf
+        """
         LOGGER.info("Starting test for batch with bad protobuf")
                          
         address = _get_client_address()
@@ -410,6 +435,9 @@ class TestPostList(RestApiBaseTest):
         
 
     async def test_api_post_empty_trxns_list(self, setup_empty_trxs_batch):
+        """Tests rest-api state by submitting
+            transactions in empty transaction list
+        """
         address = _get_client_address()
         url='{}/batches'.format(address)
         tasks=[]
@@ -427,6 +455,9 @@ class TestPostList(RestApiBaseTest):
 
            
     async def test_api_post_batch_different_signer(self, setup):
+        """Tests rest-api state by submitting 
+            transactions with different signer 
+        """
         address = _get_client_address()
         url='{}/batches'.format(address)
         tasks=[]
@@ -449,6 +480,9 @@ class TestPostList(RestApiBaseTest):
         self.assert_valid_error(response[0], INVALID_BATCH)
     
     async def test_rest_api_post_no_endpoint(self, setup):
+        """Tests rest-api state by submitting
+            transactions with no endpoint
+        """
         address = _get_client_address()
         url='/'.format(address)
         tasks=[]
@@ -469,7 +503,10 @@ class TestPostList(RestApiBaseTest):
 
 
 class TestPostInvalidTxns(RestApiBaseTest):    
-    def test_txn_invalid_addr(self, setup_invalid_txns):
+    def test_txn_invalid_addr(self, setup_invalid_txns):  
+        """Tests rest-api state by submitting invalid 
+            transactions with invalid address 
+        """
         initial_batch_length = setup_invalid_txns['initial_batch_length']
         expected_batch_length = setup_invalid_txns['expected_batch_length']
         initial_trn_length = setup_invalid_txns['initial_trn_length']
@@ -479,6 +516,9 @@ class TestPostInvalidTxns(RestApiBaseTest):
         assert setup_invalid_txns['response'] == 'INVALID'
         
     def test_txn_invalid_min(self, setup_invalid_txns_min):
+        """Tests rest-api state by submitting invalid 
+            transactions with minimum address length 
+        """
         initial_batch_length = setup_invalid_txns_min['initial_batch_length']
         expected_batch_length = setup_invalid_txns_min['expected_batch_length']
         initial_trn_length = setup_invalid_txns_min['initial_trn_length']
@@ -488,6 +528,9 @@ class TestPostInvalidTxns(RestApiBaseTest):
         assert setup_invalid_txns_min['response'] == 'INVALID'
         
     def test_txn_invalid_max(self, setup_invalid_txns_max):
+        """Tests rest-api state by submitting invalid 
+            transactions with maximum address length 
+        """
         initial_batch_length = setup_invalid_txns_max['initial_batch_length']
         expected_batch_length = setup_invalid_txns_max['expected_batch_length']
         initial_trn_length = setup_invalid_txns_max['initial_trn_length']
@@ -497,6 +540,9 @@ class TestPostInvalidTxns(RestApiBaseTest):
         assert setup_invalid_txns_max['response'] == 'INVALID'
         
     def test_txn_valid_invalid_txns(self, setup_valinv_txns):
+        """Tests rest-api state by submitting valid 
+            transactions with invalid transactions
+        """
         initial_batch_length = setup_valinv_txns['initial_batch_length']
         expected_batch_length = setup_valinv_txns['expected_batch_length']
         initial_trn_length = setup_valinv_txns['initial_trn_length']
@@ -505,7 +551,10 @@ class TestPostInvalidTxns(RestApiBaseTest):
         assert initial_trn_length < expected_trn_length
         assert setup_valinv_txns['response'] == 'INVALID'
         
-    def test_txn_invalid_valid_txns(self, setup_invval_txns):     
+    def test_txn_invalid_valid_txns(self, setup_invval_txns):   
+        """Tests rest-api state by submitting invalid 
+            transactions with valid transactions
+        """  
         initial_batch_length = setup_invval_txns['initial_batch_length']
         expected_batch_length = setup_invval_txns['expected_batch_length']
         initial_trn_length = setup_invval_txns['initial_trn_length']
@@ -515,6 +564,9 @@ class TestPostInvalidTxns(RestApiBaseTest):
         assert setup_invval_txns['response'] == 'INVALID'
        
     def test_txn_same_txns(self, setup_same_txns):
+        """Tests rest-api state by submitting invalid 
+            transactions with same transactions
+        """
         initial_batch_length = setup_same_txns['initial_batch_length']
         expected_batch_length = setup_same_txns['expected_batch_length']
         initial_trn_length = setup_same_txns['initial_trn_length']
@@ -524,6 +576,9 @@ class TestPostInvalidTxns(RestApiBaseTest):
         assert setup_same_txns['code'] == 30
     
     def test_api_sent_commit_txns(self, setup_valid_txns):
+        """Tests rest-api state by submitting invalid 
+            transactions with commit transactions
+        """
         expected_transaction=setup_valid_txns['expected_txns']
          
         transaction_id=str(expected_transaction)[2:-2]
@@ -539,6 +594,9 @@ class TestPostInvalidTxns(RestApiBaseTest):
              assert response['error']['code'] == RECEIPT_NOT_FOUND    
 
     def test_txn_invalid_bad_addr(self, setup_invalid_invaddr):
+        """Tests rest-api state by submitting invalid 
+            transactions with invalid bad  address 
+        """
         initial_batch_length = setup_invalid_invaddr['initial_batch_length']
         expected_batch_length = setup_invalid_invaddr['expected_batch_length']
         initial_trn_length = setup_invalid_invaddr['initial_trn_length']
@@ -547,6 +605,10 @@ class TestPostInvalidTxns(RestApiBaseTest):
         assert initial_trn_length < expected_trn_length
     
     def test_txn_invalid_family_name(self, setup_invalid_txns_fn):
+        """Tests rest-api state by submitting invalid 
+            transactions with invalid family name
+        """
+        
         initial_batch_length = setup_invalid_txns_fn['initial_batch_length']
         expected_batch_length = setup_invalid_txns_fn['expected_batch_length']
         initial_trn_length = setup_invalid_txns_fn['initial_trn_length']

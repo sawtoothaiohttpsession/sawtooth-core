@@ -19,6 +19,7 @@ import json
 import urllib.request
 import urllib.error
 import aiohttp
+import inspect
    
 from utils import get_blocks, get_block_id, get_batches, get_transactions
  
@@ -49,6 +50,31 @@ TIMEOUT=5
    
 LOGGER = logging.getLogger(__name__)
 LOGGER.setLevel(logging.INFO)
+
+@pytest.fixture(autouse=True, scope="function")
+def desc_test_rest_api_get_block(json_metadata, request, capsys):
+   
+    count=0
+    list2 = [TestBlockList.test_api_get_block_list,TestBlockList.test_api_get_block_list_head,
+              TestBlockList.test_api_get_block_list_bad_head,TestBlockList.test_api_get_block_list_id,
+              TestBlockList.test_api_get_block_list_bad_id,TestBlockList.test_api_get_paginated_block_list,
+              TestBlockList.test_api_get_block_list_limit,TestBlockList.test_api_get_block_list_invalid_start,
+              TestBlockList.test_api_get_block_list_invalid_limit,TestBlockList.test_api_get_block_list_reversed,
+              TestBlockList.test_api_get_block_link_val,
+              TestBlockList.test_api_get_block_key_params,TestBlockList.test_api_get_each_block_batch_id_length,
+              TestBlockList.test_api_get_first_block_id_length,TestBlockList.test_rest_api_check_post_max_batches,
+              TestBlockList.test_rest_api_check_head_signature,TestBlockList.test_rest_api_check_family_version,
+              TestBlockList.test_rest_api_check_input_output_content,TestBlockList.test_rest_api_check_signer_public_key,
+              TestBlockList.test_rest_api_check_blocks_count,TestBlockList.test_rest_api_blk_content_head_signature,
+              TestBlockGet.test_api_get_block_id,TestBlockGet.test_api_get_bad_block_id
+             
+             ]
+    for f in list2 :
+
+          json_metadata[count] = inspect.getdoc(f)
+          
+          count=count + 1
+
    
    
 class TestBlockList(RestApiBaseTest):
@@ -194,7 +220,7 @@ class TestBlockList(RestApiBaseTest):
         self.assert_valid_error(response, INVALID_PAGING_QUERY)
     
     async def test_api_get_block_list_limit(self, setup):   
-        """Tests GET /batches is reachable using paging parameters 
+        """Tests GET /batches is reachable with limit
         """
         LOGGER.info("Starting test for batch with paging parameters")
         signer_key = setup['signer_key']
@@ -263,7 +289,7 @@ class TestBlockList(RestApiBaseTest):
     
                      
     async def test_api_get_block_list_reversed(self, setup):   
-        """verifies that GET /blocks is unreachable with bad head parameter 
+        """verifies that GET /blocks when reversed
         """
         LOGGER.info("Starting test for blocks with reversed list")
         address = setup['address']
@@ -287,7 +313,7 @@ class TestBlockList(RestApiBaseTest):
         assert bool(response['data']) == True
     
     async def test_api_get_block_link_val(self, setup):
-        """Tests/ validate the block parameters with blocks, head, start and limit
+        """Verify the GET/ block link  value
         """
         address = setup['address']
         try:
@@ -307,7 +333,7 @@ class TestBlockList(RestApiBaseTest):
             LOGGER.info("Link is not proper for state and parameters are missing")
     
     async def test_api_get_block_key_params(self, setup):
-        """Tests/ validate the block key parameters with data, head, link and paging               
+        """Tests/ validate the block key parameters like data, head, link and paging               
         """
         address = setup['address']
         try:
@@ -490,7 +516,7 @@ class TestBlockList(RestApiBaseTest):
         
 class TestBlockGet(RestApiBaseTest):
     async def test_api_get_block_id(self, setup):
-        """Tests that GET /blocks/{block_id} is reachable 
+        """Tests that GET /blocks/  is reachable with block id 
         """
         LOGGER.info("Starting test for blocks/{block_id}")
         signer_key = setup['signer_key']
@@ -516,8 +542,7 @@ class TestBlockGet(RestApiBaseTest):
                                     expected_txns,payload,signer_key)
           
     async def test_api_get_bad_block_id(self, setup):
-        """Tests that GET /blocks/{bad_block_id} is not reachable
-           with bad id
+        """Tests that GET /blocks/ is not reachable with bad id
         """
         LOGGER.info("Starting test for blocks/{bad_block_id}")
         address = setup['address']
@@ -530,4 +555,5 @@ class TestBlockGet(RestApiBaseTest):
             LOGGER.info(error)
           
         self.assert_valid_error(response, INVALID_RESOURCE_ID)
-
+        
+  

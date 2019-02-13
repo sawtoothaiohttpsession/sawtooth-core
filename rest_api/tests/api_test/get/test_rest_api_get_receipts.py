@@ -19,6 +19,8 @@ import json
 import urllib.request
 import urllib.error
 import aiohttp
+import inspect
+
   
 from utils import get_state_list, get_reciepts, post_receipts
 from base import RestApiBaseTest
@@ -35,8 +37,21 @@ RECEIPT_BODY_INVALID = 82
 RECEIPT_Id_QUERYINVALID = 83
 INVALID_RESOURCE_ID = 60
 TIMEOUT=5
-  
-  
+
+@pytest.fixture(autouse=True, scope="function")
+def desc_test_rest_api_get_receipts(json_metadata, request, capsys):
+   
+    count=0
+    list4 = [TestReceiptsList.test_api_get_reciept_invalid_id,TestReceiptsList.test_api_get_reciepts_multiple_transactions,
+              TestReceiptsList.test_api_get_reciepts_single_transactions,TestReceiptsList.test_api_post_reciepts_single_transactions,
+              TestReceiptsList.test_api_post_reciepts_invalid_transactions,TestReceiptsList.test_api_post_reciepts_multiple_transactions, 
+             ]
+    for f in list4 :
+
+          json_metadata[count] = inspect.getdoc(f)
+          count=count + 1
+ 
+
 class TestReceiptsList(RestApiBaseTest):
     """This class tests the receipt list with different parameters
     """

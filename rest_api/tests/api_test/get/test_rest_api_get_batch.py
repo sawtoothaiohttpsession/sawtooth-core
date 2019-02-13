@@ -20,6 +20,7 @@ import urllib.request
 import urllib.error
 import aiohttp
 import asyncio
+import inspect
 
  
 from fixtures import break_genesis, invalid_batch
@@ -54,9 +55,36 @@ STATUS_BODY_INVALID = 43
 STATUS_WRONG_CONTENT_TYPE = 46
 WAIT = 10
 
+
+          
 async def fetch(url, session,params=None):
     async with session.get(url) as response:
         return await response.json()
+
+@pytest.fixture(autouse=True, scope="function")
+def desc_test_rest_api_get_batch(json_metadata, request, capsys):
+   
+    count=0
+    list1 = [TestBatchList.test_api_get_batch_list,TestBatchList.test_api_get_batch_list_head,
+              TestBatchList.test_api_get_batch_list_bad_head,TestBatchList.test_api_get_batch_list_id,
+              TestBatchList.test_api_get_batch_list_bad_id,TestBatchList.test_api_get_batch_list_head_and_id,
+              TestBatchList.test_api_get_paginated_batch_list,TestBatchList.test_api_get_batch_list_limit,
+              TestBatchList.test_api_get_batch_list_invalid_start,TestBatchList.test_api_get_batch_list_invalid_limit,
+              TestBatchList.test_api_get_batch_list_reversed,TestBatchList.test_api_get_batch_key_params,
+              TestBatchList.test_api_get_batch_param_link_val,TestBatchList.test_rest_api_check_batches_count,
+              TestBatchGet.test_api_get_batch_id,TestBatchGet.test_api_get_bad_batch_id,
+              TestBatchStatusesList.test_api_post_batch_status_15ids,TestBatchStatusesList.test_api_post_batch_status_10ids,
+              TestBatchStatusesList.test_api_get_batch_statuses,TestBatchStatusesList.test_api_get_batch_statuses_many_ids,
+              TestBatchStatusesList.test_api_get_batch_statuses_bad_id,TestBatchStatusesList.test_api_get_batch_statuses_invalid_query,
+              TestBatchStatusesList.test_api_get_batch_statuses_wait,TestBatchStatusesList.test_api_get_batch_statuses_invalid,
+              TestBatchStatusesList.test_api_get_batch_statuses_unknown,TestBatchStatusesList.test_api_get_batch_statuses_default_wait,
+             ]
+    
+    for f in list1:
+
+          json_metadata[count] = inspect.getdoc(f)
+          count=count + 1
+    
 
 
 class TestBatchList(RestApiBaseTest):
@@ -274,7 +302,7 @@ class TestBatchList(RestApiBaseTest):
         self.assert_valid_error(response, INVALID_PAGING_QUERY)
     
     async def test_api_get_batch_list_limit(self, setup):   
-        """Tests GET /batches is reachable using paging parameters 
+        """Tests GET /batches is reachable with limit 
         """
         LOGGER.info("Starting test for batch with paging parameters")
         signer_key = setup['signer_key']
@@ -445,6 +473,9 @@ class TestBatchList(RestApiBaseTest):
        
 class TestBatchGet(RestApiBaseTest):
     async def test_api_get_batch_id(self, setup):
+        """verifies that GET /batches/{batch_id} 
+           is reachable with head parameter 
+        """
         signer_key = setup['signer_key']
         expected_head = setup['expected_head']
         expected_batches = setup['expected_batches']
@@ -508,7 +539,7 @@ class TestBatchStatusesList(RestApiBaseTest):
     
     
     async def test_api_post_batch_status_10ids(self,setup):   
-        """verifies that POST /batches_status with less than 15 ids
+        """verifies that POST /batches_status with less than 10 ids
         """
         LOGGER.info("Starting test for post batch statuses with less than 15 ids")
         batch_ids = setup['batch_ids']
@@ -526,6 +557,8 @@ class TestBatchStatusesList(RestApiBaseTest):
                 
 
     async def test_api_get_batch_statuses(self,setup):
+        """verifies that GET /batches_status
+        """
         signer_key = setup['signer_key']
         address = setup['address']
         expected_head = setup['expected_head']
@@ -546,6 +579,8 @@ class TestBatchStatusesList(RestApiBaseTest):
         self.assert_valid_link(response, expected_link)
     
     async def test_api_get_batch_statuses_many_ids(self,setup):
+        """verifies that GET /batches_status with many ids
+        """
         signer_key = setup['signer_key']
         expected_head = setup['expected_head']
         expected_batches = setup['expected_batches']
@@ -568,6 +603,8 @@ class TestBatchStatusesList(RestApiBaseTest):
         self.assert_valid_link(response, expected_link)
     
     async def test_api_get_batch_statuses_bad_id(self,setup):
+        """verifies that GET /batches_status with bad ids
+        """
         signer_key = setup['signer_key']
         expected_head = setup['expected_head']
         expected_batches = setup['expected_batches']
@@ -585,6 +622,8 @@ class TestBatchStatusesList(RestApiBaseTest):
         self.assert_valid_error(response, INVALID_RESOURCE_ID)
     
     async def test_api_get_batch_statuses_invalid_query(self,setup):
+        """verifies that GET /batches_status with invalid query
+        """
         signer_key = setup['signer_key']
         expected_head = setup['expected_head']
         expected_batches = setup['expected_batches']
@@ -600,6 +639,8 @@ class TestBatchStatusesList(RestApiBaseTest):
         self.assert_valid_error(response, STATUS_ID_QUERY_INVALID)
         
     async def test_api_get_batch_statuses_wait(self,setup):
+        """verifies that GET /batches_status with waiting time
+        """
         signer_key = setup['signer_key']
         expected_head = setup['expected_head']
         expected_batches = setup['expected_batches']
@@ -624,6 +665,8 @@ class TestBatchStatusesList(RestApiBaseTest):
     
     
     async def test_api_get_batch_statuses_invalid(self, invalid_batch):
+        """verifies that GET /batches_status is unreachable with invalid
+        """
         expected_batches = invalid_batch['expected_batches']
         address = invalid_batch['address']
         status = "INVALID"
@@ -643,6 +686,8 @@ class TestBatchStatusesList(RestApiBaseTest):
         
     
     async def test_api_get_batch_statuses_unknown(self, setup):
+        """verifies that GET /batches_status with unknown 
+        """
         address = setup['address']
         expected_batches = setup['expected_batches']
         batch = expected_batches[0]
@@ -664,6 +709,8 @@ class TestBatchStatusesList(RestApiBaseTest):
         self.assert_valid_link(response, expected_link)
     
     async def test_api_get_batch_statuses_default_wait(self,setup):
+        """verifies that GET /batches_status is unreachable with default wait time
+        """
         signer_key = setup['signer_key']
         expected_head = setup['expected_head']
         expected_batches = setup['expected_batches']
@@ -682,3 +729,5 @@ class TestBatchStatusesList(RestApiBaseTest):
                                               
         self.assert_status(response,status)
         self.assert_valid_link(response, expected_link)
+        
+

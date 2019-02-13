@@ -19,6 +19,7 @@ import json
 import urllib.request
 import urllib.error
 import aiohttp
+import inspect
 
 from fixtures import break_genesis
 
@@ -47,8 +48,29 @@ VALIDATOR_NOT_READY  = 15
 TRANSACTION_NOT_FOUND = 72
 HEAD_LENGTH = 128
 TIMEOUT=5
-  
 
+
+
+
+@pytest.fixture(autouse=True, scope="function")
+def desc_test_rest_api_get_transaction(json_metadata, request, capsys):
+    count=0
+    list6 = [TestTransactionList.test_api_get_transaction_list,TestTransactionList.test_api_get_transaction_list_head,
+              TestTransactionList.test_api_get_transaction_list_bad_head,TestTransactionList.test_api_get_transaction_list_id,
+              TestTransactionList.test_api_get_transaction_list_bad_id,TestTransactionList.test_api_get_transaction_list_head_and_id,
+              TestTransactionList.test_api_get_paginated_transaction_list,TestTransactionList.test_api_get_transaction_list_limit,
+              TestTransactionList.test_api_get_transaction_bad_paging,TestTransactionList.test_api_get_transaction_list_invalid_start,
+              TestTransactionList.test_api_get_transaction_list_invalid_limit,TestTransactionList.test_api_get_transaction_list_reversed,
+              TestTransactionList.test_api_get_transactions_link_val,TestTransactionList.test_api_get_transactions_key_params,
+              TestTransactionList.test_api_get_transaction_id_length,TestTransactionList.test_rest_api_check_transactions_count,
+              TestTransactionGet.test_api_get_transaction_id,TestTransactionGet.test_api_get_transaction_bad_id
+            
+             ]
+    for f in list6:
+
+          json_metadata[count]=inspect.getdoc(f)
+          count=count + 1  
+ 
 class TestTransactionList(RestApiBaseTest):
     async def test_api_get_transaction_list(self, setup):
         """Tests the transaction list after submitting intkey batches
